@@ -4,7 +4,7 @@
 
 ```julia
 using Pkg
-Pkg.add(PackageSpec(url="https://github.com/waralex/Block2_jll.git"))
+Pkg.add(PackageSpec(url="https://github.com/waralex/Blosc2_jll.git"))
 Pkg.add(PackageSpec(url="https://github.com/waralex/Blosc2.jl.git"))
 ```
 Installation under windows is not yet possible because of this problem: https://github.com/Blosc/c-blosc2/issues/302
