@@ -1,3 +1,3 @@
 using Test
-include("lib.jl")
+include("lib/lib.jl")
 include("dev.jl")
