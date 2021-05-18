@@ -1,7 +1,7 @@
 
-struct blosc2_metalayer
+struct blosc2_metalayer_unsafe
   name::Cstring #!< The metalayer identifier for Blosc client (e.g. Caterva).
-  content::Ref{UInt8} #!< The serialized (msgpack preferably) content of the metalayer.
+  content::Ptr{UInt8} #!< The serialized (msgpack preferably) content of the metalayer.
   content_len::Int32 #!< The length in bytes of the content.
 end
 
@@ -41,9 +41,9 @@ struct blosc2_schunk
     frame ::Ptr{Cvoid} #!< Pointer to frame used as store for chunks.
     cctx ::Ptr{blosc2_context} #!< Context for compression
     dctx ::Ptr{blosc2_context} #!< Context for decompression.
-    metalayers ::NTuple{BLOSC2_MAX_METALAYERS, blosc2_metalayer} #!< The array of metalayers.
+    metalayers ::NTuple{BLOSC2_MAX_METALAYERS, blosc2_metalayer_unsafe} #!< The array of metalayers.
     nmetalayers ::Int16 #!< The number of metalayers in the super-chunk
-    vlmetalayers ::NTuple{BLOSC2_MAX_VLMETALAYERS, blosc2_metalayer} #<! The array of variable-length metalayers.
+    vlmetalayers ::NTuple{BLOSC2_MAX_VLMETALAYERS, blosc2_metalayer_unsafe} #<! The array of variable-length metalayers.
     nvlmetalayers ::Int16 #!< The number of variable-length metalayers.
     udbtune ::Ptr{Cvoid}
 end

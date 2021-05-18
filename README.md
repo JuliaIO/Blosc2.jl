@@ -18,5 +18,8 @@ Currently, low-level wrappers are implemented (In the Blosc2.Lib submodule) corr
 * Blosc1 API https://c-blosc2.readthedocs.io/en/latest/reference/blosc1.html
 * Context https://c-blosc2.readthedocs.io/en/latest/reference/context.html (except of `blosc2_ctx_get_cparams` and `blosc2_ctx_get_dparams`)
 * SuperSchunks https://c-blosc2.readthedocs.io/en/latest/reference/schunk.html
+* MetaLayers https://c-blosc2.readthedocs.io/en/latest/reference/metalayers.html
+
+Low level api except of plugins is done
 
 The development plans are to first implement a fully low-level API in the `Lib` submodule and use it to develop a higher-level API for convenient use in Julia
