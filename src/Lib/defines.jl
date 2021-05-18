@@ -15,6 +15,16 @@ const BLOSC2_UDEFINED_FILTERS = 256 #!< User-defined filters must be between 128
 const BLOSC2_MAX_FILTERS = 6 #!< Maximum number of filters in the filter pipeline
 const BLOSC2_MAX_UDFILTERS = 16 #!< Maximum number of filters that a user can register.
 
+const BLOSC2_IO_FILESYSTEM = UInt8(0)
+const BLOSC_IO_LAST_BLOSC_DEFINED = UInt8(1)
+const BLOSC_IO_LAST_REGISTERED = UInt8(32)
+
+const BLOSC2_MAX_METALAYERS = 16
+const BLOSC2_METALAYER_NAME_MAXLEN = 31
+
+const BLOSC2_MAX_VLMETALAYERS = BLOSC2_MAX_METALAYERS
+const BLOSC2_VLMETALAYERS_NAME_MAXLEN = BLOSC2_METALAYER_NAME_MAXLEN
+
 """
     FilterCodes
 Codes for filters.

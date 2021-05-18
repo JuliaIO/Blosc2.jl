@@ -203,24 +203,6 @@ If success, a 0 values is returned. An error is signaled with a negative int.
 function blosc2_set_maskout(ctx::Ptr{blosc2_context}, maskout::DenseArray{Bool}, nblocks)
     @ccall lib.blosc2_set_maskout(ctx::Ptr{blosc2_context}, maskout::Ptr{Bool}, nblocks::Cint)::Cint
 end
-#=
-int blosc2_set_maskout(blosc2_context *ctx, bool *maskout, int nblocks)
-Set a maskout so as to avoid decompressing specified blocks.
-
-Remark
-The maskout is valid for contexts only meant for decompressing a chunk via blosc2_decompress_ctx. Once a call to blosc2_decompress_ctx is done, this mask is reset so that next call to blosc2_decompress_ctx will decompress the whole chunk.
-
-Parameters
-ctx – The decompression context to update.
-
-maskout – The boolean mask for the blocks where decompression is to be avoided.
-
-nblocks – The number of blocks in maskout above.
-
-Returns
-If success, a 0 values is returned. An error is signaled with a negative int.
-=#
-#=
 """
     blosc2_ctx_get_cparams(ctx::Ptr{blosc2_context})
 
@@ -254,4 +236,4 @@ function blosc2_ctx_get_dparams(ctx::Ptr{blosc2_context})
 
     (r < 0 || cparams[] == C_NULL) && return nothing
     return dparams[]
-end=#
+end
