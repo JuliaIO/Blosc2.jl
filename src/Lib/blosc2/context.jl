@@ -46,18 +46,18 @@ struct blosc2_cparams
       blocksize =0,
       splitmode = BLOSC_FORWARD_COMPAT_SPLIT,
       schunk = C_NULL,
-      filters = FiltersTuple([0, 0, 0, 0, 0, UInt8(BLOSC_SHUFFLE)]),
+      filters = FiltersTuple([0, 0, 0, 0, 0, BLOSC_SHUFFLE]),
       filters_meta = FiltersTuple([0, 0, 0, 0, 0, 0])
     )
         new(
-            UInt8(compcode),
+            compcode,
             compcode_meta,
             clevel,
             use_dict,
             typesize,
             nthreads,
             blocksize,
-            UInt8(splitmode),
+            splitmode,
             schunk,
             filters,
             filters_meta,

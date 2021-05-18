@@ -15,9 +15,9 @@ const BLOSC2_UDEFINED_FILTERS = 256 #!< User-defined filters must be between 128
 const BLOSC2_MAX_FILTERS = 6 #!< Maximum number of filters in the filter pipeline
 const BLOSC2_MAX_UDFILTERS = 16 #!< Maximum number of filters that a user can register.
 
-const BLOSC2_IO_FILESYSTEM = UInt8(0)
-const BLOSC_IO_LAST_BLOSC_DEFINED = UInt8(1)
-const BLOSC_IO_LAST_REGISTERED = UInt8(32)
+const BLOSC2_IO_FILESYSTEM = 0
+const BLOSC_IO_LAST_BLOSC_DEFINED = 1
+const BLOSC_IO_LAST_REGISTERED = 32
 
 const BLOSC2_MAX_METALAYERS = 16
 const BLOSC2_METALAYER_NAME_MAXLEN = 31
@@ -26,53 +26,43 @@ const BLOSC2_MAX_VLMETALAYERS = BLOSC2_MAX_METALAYERS
 const BLOSC2_VLMETALAYERS_NAME_MAXLEN = BLOSC2_METALAYER_NAME_MAXLEN
 
 """
-    FilterCodes
 Codes for filters.
 """
-@enum FilterCodes::UInt8 begin
-  BLOSC_NOFILTER = 0    #!< No filter.
-  BLOSC_SHUFFLE = 1     #!< Byte-wise shuffle.
-  BLOSC_BITSHUFFLE = 2  #!< Bit-wise shuffle.
-  BLOSC_DELTA = 3       #!< Delta filter.
-  BLOSC_TRUNC_PREC = 4  #!< Truncate precision filter.
-  BLOSC_LAST_FILTER = 5 #!< sentinel
-end
+const  BLOSC_NOFILTER = 0    #!< No filter.
+const  BLOSC_SHUFFLE = 1     #!< Byte-wise shuffle.
+const  BLOSC_BITSHUFFLE = 2  #!< Bit-wise shuffle.
+const  BLOSC_DELTA = 3       #!< Delta filter.
+const  BLOSC_TRUNC_PREC = 4  #!< Truncate precision filter.
+const  BLOSC_LAST_FILTER = 5 #!< sentinel
 
 """
-  FlagCodes
 Codes for internal flags (see `blosc_cbuffer_metainfo`)
 """
-@enum FlagCodes begin
-  BLOSC_DOSHUFFLE = 0x1     #!< byte-wise shuffle
-  BLOSC_MEMCPYED = 0x2      #!< plain copy
-  BLOSC_DOBITSHUFFLE = 0x4  #!< bit-wise shuffle
-  BLOSC_DODELTA = 0x8       #!< delta coding
-end
+const  BLOSC_DOSHUFFLE = 0x1     #!< byte-wise shuffle
+const  BLOSC_MEMCPYED = 0x2      #!< plain copy
+const  BLOSC_DOBITSHUFFLE = 0x4  #!< bit-wise shuffle
+const  BLOSC_DODELTA = 0x8       #!< delta coding
 
 """
-  CCompCodes
 Codes for the different compressors shipped with Blosc
 """
-@enum CCompCodes begin
-  BLOSC_BLOSCLZ = 0
-  BLOSC_LZ4 = 1
-  BLOSC_LZ4HC = 2
-  BLOSC_ZLIB = 4
-  BLOSC_ZSTD = 5
-  BLOSC_LAST_CODEC = 6 #!< Determine the last codec defined by Blosc.
-end
+const  BLOSC_BLOSCLZ = 0
+const  BLOSC_LZ4 = 1
+const  BLOSC_LZ4HC = 2
+const  BLOSC_ZLIB = 4
+const  BLOSC_ZSTD = 5
+const  BLOSC_LAST_CODEC = 6 #!< Determine the last codec defined by Blosc.
+
 """
-  CLibCodes
 Codes for compression libraries shipped with Blosc (code must be < 8)
 """
-@enum CLibCodes::UInt8 begin
-  BLOSC_BLOSCLZ_LIB = 0
-  BLOSC_LZ4_LIB = 1
-  BLOSC_ZLIB_LIB = 3
-  BLOSC_ZSTD_LIB = 4
-  BLOSC_UDCODEC_LIB = 6
-  BLOSC_SCHUNK_LIB = 7   #!< compressor library in super-chunk header
-end
+const  BLOSC_BLOSCLZ_LIB = 0
+const  BLOSC_LZ4_LIB = 1
+const  BLOSC_ZLIB_LIB = 3
+const  BLOSC_ZSTD_LIB = 4
+const  BLOSC_UDCODEC_LIB = 6
+const  BLOSC_SCHUNK_LIB = 7   #!< compressor library in super-chunk header
+
 """
   SplitMode
 Split mode for blocks.
@@ -80,12 +70,10 @@ NEVER and ALWAYS are for experimenting with compression ratio.
 AUTO for nearly optimal behaviour (based on heuristics).
 FORWARD_COMPAT provides best forward compatibility (default).
 """
-@enum SplitMode::Int32 begin
-  BLOSC_ALWAYS_SPLIT = 1
-  BLOSC_NEVER_SPLIT = 2
-  BLOSC_AUTO_SPLIT = 3
-  BLOSC_FORWARD_COMPAT_SPLIT = 4
-end
+const  BLOSC_ALWAYS_SPLIT = 1
+const  BLOSC_NEVER_SPLIT = 2
+const  BLOSC_AUTO_SPLIT = 3
+const  BLOSC_FORWARD_COMPAT_SPLIT = 4
 
 """
 The codes for compressor formats shipped with Blosc
