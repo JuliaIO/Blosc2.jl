@@ -1,5 +1,5 @@
 module Blosc2
 include("Lib/lib.jl")
-greet() = print("Hello World!")
-
+include("common/common.jl")
+include("compression/compression.jl")
 end # module

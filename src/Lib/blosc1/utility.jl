@@ -54,7 +54,6 @@ function blosc_get_complib_info(compname)::NamedTuple{(:code, :complib, :version
     complib = Ref{Cstring}()
     version = Ref{Cstring}()
     r = @ccall lib.blosc_get_complib_info(compname::Cstring, complib::Ref{Cstring}, version::Ref{Cstring})::Cint
-    println(r)
     r == -1 && return (code = -1, complib = "", version = "")
 
     return (
