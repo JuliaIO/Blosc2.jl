@@ -218,7 +218,7 @@ Update a chunk at a specific position in a super-chunk.
 
 The number of chunks in super-chunk. If some problem is detected, this number will be negative.
 """
-function blosc2_schunk_update_chunk(schunk::Ptr{blosc2_schunk}, nchunk, chunk::DenseVector{UInt8}, copy)
+function blosc2_schunk_update_chunk(schunk::Ptr{blosc2_schunk}, nchunk, chunk::Vector{UInt8}, copy)
     @ccall lib.blosc2_schunk_update_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, chunk::Ptr{UInt8}, copy::Bool)::Cint
 end
 
@@ -241,7 +241,7 @@ function blosc2_schunk_delete_chunk(schunk::Ptr{blosc2_schunk}, nchunk)
 end
 
 """
-    blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::DenseVector{Int32})
+    blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Vector{Int32})
 
 Reorder the chunk offsets of an existing super-chunk.
 
@@ -255,7 +255,7 @@ Reorder the chunk offsets of an existing super-chunk.
 
 0 if suceeds. Else a negative code is returned.
 """
-function blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::DenseVector{Int32})
+function blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Vector{Int32})
     @ccall lib.blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Ptr{Cint})::Cint
 end
 

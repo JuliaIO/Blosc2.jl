@@ -33,4 +33,52 @@ end
     @test cp.nthreads == 3
     @test cp.blocksize == 10
     @test cp.splitmode == 1
+
+    dparams = Blosc2.DecompressionParams(nthreads = 10)
+    dp = Blosc2.make_dparams(dparams)
+    @test dp.nthreads == 10
+end
+
+@testset "context" begin
+    ctx = Blosc2.Context(Blosc2.CompressionParams(level = 9))
+    @test ctx.params.nthreads == 1
+    @test ctx.params.level == 9
+    @test typeof(ctx) == Blosc2.CompressionContext
+    @test typeof(ctx.params) == Blosc2.CompressionParams
+
+    ctx = Blosc2.CompressionContext(Blosc2.CompressionParams(level = 8))
+    @test ctx.params.nthreads == 1
+    @test ctx.params.level == 8
+    @test typeof(ctx) == Blosc2.CompressionContext
+    @test typeof(ctx.params) == Blosc2.CompressionParams
+
+    ctx = Blosc2.CompressionContext()
+    @test ctx.params == Blosc2.CompressionParams()
+    @test typeof(ctx.params) == Blosc2.CompressionParams
+
+
+    ctx = Blosc2.Context(Blosc2.DecompressionParams(nthreads = 2))
+    @test ctx.params.nthreads == 2
+    @test typeof(ctx) == Blosc2.DecompressionContext
+    @test typeof(ctx.params) == Blosc2.DecompressionParams
+
+    ctx = Blosc2.DecompressionContext(Blosc2.DecompressionParams(nthreads = 3))
+    @test ctx.params.nthreads == 3
+    @test typeof(ctx) == Blosc2.DecompressionContext
+    @test typeof(ctx.params) == Blosc2.DecompressionParams
+
+    ctx = Blosc2.DecompressionContext()
+    @test typeof(ctx.params) == Blosc2.DecompressionParams
+    @test ctx.params == Blosc2.DecompressionParams()
+
+end
+
+@testset "compress/decompress" begin
+    n = 10000
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    sz = Blosc2.compress!(Blosc2.CompressionContext(), buffer, data)
+    res = Vector{Int64}(undef, n)
+    Blosc2.decompress!(Blosc2.DecompressionContext(),  res, buffer)
+    @test res == data
 end
