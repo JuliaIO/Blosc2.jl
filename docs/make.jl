@@ -4,7 +4,7 @@ using Blosc2
 makedocs(
     sitename = "Blosc2.jl",
     format = Documenter.HTML(),
-    modules = [DataFrameDBs],
+    modules = [Blosc2],
     pages = Any[
         "Introduction" => "index.md",
         "API" => [
