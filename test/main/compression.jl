@@ -139,6 +139,13 @@ end
     res = decompress(Int16, buffer, nthreads = 2)
     @test res == data
 
+    data = rand(Base.OneTo{Int16}(1000), n)
+    buffer = compress(data, 51:60, level = 9)
+    @test sizeof(buffer) > 0
+    @test sizeof(buffer) < max_compressed_size(data)
+    res = decompress(Int16, buffer, nthreads = 2)
+    @test res == data[51:60]
+
 end
 
 @testset "unsafe compress/decompress" begin
@@ -175,18 +182,18 @@ end
     data = rand(1:1000, n)
     buffer = Blosc2.make_compress_buffer(data)
     pos = 1
-    sz = compress!(CompressionContext(),buffer, pos, data, 1, 500)
+    sz = compress!(CompressionContext(),buffer, data, pos, 1:500)
     @test sz > 0
     pos += sz
-    sz = compress!(CompressionContext(),buffer, pos, data, 501, 500)
+    sz = compress!(CompressionContext(),buffer, data, pos, 501:1000)
     @test sz > 0
     result = Vector{Int64}(undef, 1500)
 
-    sz = decompress!(DecompressionContext(), result, 501, buffer, pos)
+    sz = decompress!(DecompressionContext(), result, buffer, 501, pos)
     @test sz == 500
     @test result[501:1000] == data[501:1000]
 
-    sz = decompress!(DecompressionContext(), result, 1001, buffer, 1)
+    sz = decompress!(DecompressionContext(), result, buffer, 1001, 1)
     @test sz == 500
     @test result[1001:1500] == data[1:500]
 
@@ -194,18 +201,18 @@ end
     data = rand(Base.OneTo{Int16}(1000), n)
     buffer = Blosc2.make_compress_buffer(data)
     pos = 1
-    sz = compress!(buffer, pos, data, 1, 500)
+    sz = compress!(buffer, data, pos, 1:500)
     @test sz > 0
     pos += sz
-    sz = compress!(buffer, pos, data, 501, 500)
+    sz = compress!(buffer,  data, pos, 501:1000)
     @test sz > 0
     result = Vector{Int16}(undef, 1500)
 
-    sz = decompress!(result, 501, buffer, pos)
+    sz = decompress!(result, buffer, 501, pos)
     @test sz == 500
     @test result[501:1000] == data[501:1000]
 
-    sz = decompress!(result, 1001, buffer, 1)
+    sz = decompress!(result, buffer, 1001, 1)
     @test sz == 500
     @test result[1001:1500] == data[1:500]
 end
@@ -215,15 +222,19 @@ end
     data = rand(1:1000, n)
     buffer = Blosc2.make_compress_buffer(data)
     pos = 1
-    sz = compress!(CompressionContext(),buffer, pos, data, 1, 500)
+    sz = compress!(CompressionContext(),buffer, data, pos, 1:500)
     @test sz > 0
     pos += sz
-    sz = compress!(CompressionContext(),buffer, pos, data, 501, 500)
+    sz = compress!(CompressionContext(),buffer, data, pos, 501:1000)
     @test sz > 0
     result = Vector{Int64}(undef, 1500)
 
-    r = decompress_items!(DecompressionContext(), result, 50, buffer, pos, 11:20)
+    r = decompress_items!(DecompressionContext(), result,  buffer, 11:20, 50, pos)
     @test r == 10
     @test result[50:59] == data[511:520]
+
+    r = decompress_items!(result,  buffer, 11:20)
+    @test r == 10
+    @test result[1:10] == data[11:20]
 
 end

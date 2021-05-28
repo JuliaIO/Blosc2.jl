@@ -21,33 +21,6 @@ Creates a buffer that is guaranteed to contain compressed data
 make_compress_buffer(src) = Vector{UInt8}(undef, max_compressed_size(src))
 
 """
-    compress!([ctx = CompressionContext(T; kwargs...)], dest::Vector{UInt8}, src::Array{T}; kwargs...)
-
-Compress `src` vector into dest buffer using context `ctx`, return size of the data written to dest
-"""
-function compress!(ctx::CompressionContext, dest::Vector{UInt8}, src::Array{T}) where {T}
-    !isbitstype(T) && throw(ArgumentError("Only Bits Types can be compressed"))
-    result = Lib.blosc2_compress_ctx(ctx.context, src, sizeof(src), dest, sizeof(dest))
-    result < 0 && error("Compression error. Error code: $result")
-    return result
-end
-compress!(dest::Vector{UInt8}, src::Array{T}; kwargs...) where {T} =
-    compress!(CompressionContext(T;kwargs...), dest, src)
-
-"""
-    compress([ctx = CompressionContext(T; kwargs...)], src::Array{T}; kwargs...)::Vector{UInt8}
-
-Return `Vector{UInt8}` consisting of `src` in compressed form using context `ctx`
-"""
-function compress(ctx::CompressionContext, src::Array{T}) where {T}
-    buffer = make_compress_buffer(src)
-    sz = compress!(ctx, buffer, src)
-    resize!(buffer, sz)
-    return buffer
-end
-compress(src::Array{T}; kwargs...) where {T} = compress(CompressionContext(T; kwargs...), src)
-
-"""
     unsafe_compress!([ctx = CompressionContext(T; kwargs...)], dest::Ptr{T}, dest_size, src::Ptr{T}, src_size; kwargs...)
 
 Compress `src_size` bytes from `src` buffer, into `dest` buffer (with `dest_size` bytes size) using context `ctx` with no checks, return size of the data written to dest
@@ -61,25 +34,46 @@ end
 unsafe_compress!(dest::Ptr{UInt8}, dest_size, src::Ptr{T}, src_size; kwargs...) where {T} =
     unsafe_compress!(CompressionContext(T; kwargs...), dest, dest_size, src, src_size)
 
-"""
-    compress!([ctx = CompressionContext(T; kwargs...)], dest::Vector{UInt8}, dest_offset, src::Vector{T}, src_offset, n; kwargs...)
 
-Compress `n` elements from `src` starting from `src_offset` (1-indexed) into `dest` buffer starting from `dest_offset` (1-indexed) using context `ctx`
+
+"""
+    compress!([ctx = CompressionContext(T; kwargs...)],
+         dest::Vector{UInt8}, src::Vector{T},
+         [dest_offset = 1], [src_range = 1:length(src)]
+        ; kwargs...
+        )
+
+Compress elements from  `src_range` of `src` into `dest` buffer starting from `dest_offset` (1-indexed) using context `ctx`
 Return size of the data written to dest
 """
-function compress!(ctx::CompressionContext, dest::Vector{UInt8}, dest_offset, src::Vector{T}, src_offset, n) where {T}
+function compress!(ctx::CompressionContext, dest::Vector{UInt8}, src::Vector{T}, dest_offset = 1,  src_range::UnitRange{<:Integer} = 1:length(src)) where {T}
     @boundscheck begin
         checkbounds(dest, dest_offset)
-        checkbounds(src, src_offset:src_offset+n-1)
+        checkbounds(src, src_range)
     end
     dest_size = length(dest) - dest_offset + 1
-    src_size = n * sizeof(T)
+    src_size = length(src_range) * sizeof(T)
     result = GC.@preserve dest src begin
-        unsafe_compress!(ctx, pointer(dest, dest_offset), dest_size, pointer(src, src_offset), src_size)
+        unsafe_compress!(ctx, pointer(dest, dest_offset), dest_size, pointer(src, first(src_range)), src_size)
     end
     result < 0 && error("Compression error. Error code: $result")
     return result
 end
 
-compress!(dest::Vector{UInt8}, dest_offset, src::Vector{T}, src_offset, n; kwargs...) where {T} =
-    compress!(CompressionContext(T; kwargs...), dest, dest_offset, src, src_offset, n)
+compress!(dest::Vector{UInt8}, src::Vector{T}, dest_offset = 1,  src_range::UnitRange{<:Integer} = 1:length(src); kwargs...) where {T} =
+    compress!(CompressionContext(T; kwargs...), dest, src, dest_offset, src_range)
+
+
+"""
+    compress([ctx = CompressionContext(T; kwargs...)], src::Array{T}, [src_range = 1:length(src)]; kwargs...)::Vector{UInt8}
+
+Return `Vector{UInt8}` consisting of `src_range` of `src` in compressed form using context `ctx`
+"""
+function compress(ctx::CompressionContext, src::Array{T}, src_range::UnitRange{<:Integer} = 1:length(src)) where {T}
+    buffer = make_compress_buffer(src)
+    sz = compress!(ctx, buffer, src, 1, src_range)
+    resize!(buffer, sz)
+    return buffer
+end
+compress(src::Array{T}, src_range::UnitRange{<:Integer} = 1:length(src); kwargs...) where {T} = compress(CompressionContext(T; kwargs...), src, src_range)
+
