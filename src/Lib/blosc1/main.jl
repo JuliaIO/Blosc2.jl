@@ -55,7 +55,6 @@ C signature: `int blosc_compress(int clevel, int doshuffle, size_t typesize, siz
 
 The number of bytes compressed. If src buffer cannot be compressed into destsize, the return value is zero and you should discard the contents of the dest buffer.
 """
-
 function blosc_compress(clevel, shuffle, itemsize, srcsize, src, dest, destsize)
     @ccall lib.blosc_compress(
             clevel::Cint, shuffle::Cint, itemsize::Csize_t, srcsize::Csize_t, src::Ptr{Cvoid}, dest::Ptr{Cvoid}, destsize::Csize_t

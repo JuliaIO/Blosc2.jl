@@ -147,7 +147,6 @@ Returns
 The number of bytes compressed. If src buffer cannot be compressed into destsize, the return value is zero and you should discard the contents of the dest buffer. A negative return value means that an internal error happened. It could happen that context is not meant for compression (which is stated in stderr). Otherwise, please report it back together with the buffer data causing this and compression settings.
 
 """
-
 function blosc2_compress_ctx(ctx::Ptr{blosc2_context}, src, srcsize, dest, destsize)
     @ccall lib.blosc2_compress_ctx(
             ctx::Ptr{blosc2_context}, src::Ptr{Cvoid}, srcsize::Int32,  dest::Ptr{Cvoid}, destsize::Int32
@@ -155,11 +154,12 @@ function blosc2_compress_ctx(ctx::Ptr{blosc2_context}, src, srcsize, dest, dests
 end
 
 """
-    blosc2_decompress_ctx(ctx::Ptr{blosc2_context}, src, srcsize, dest, destsize)s
+    blosc2_decompress_ctx(ctx::Ptr{blosc2_context}, src, srcsize, dest, destsize)
 
-Context interface counterpart for blosc_getitem.
+Context interface to Blosc decompression.
 
-It uses many of the same parameters as blosc_getitem() function with a few additions.
+This does not require a call to blosc_init and can be called from multithreaded applications without the global lock being used,
+so allowing Blosc be executed simultaneously in those scenarios.
 
 # Returns
 The number of bytes copied to dest or a negative value if some error happens.
@@ -171,6 +171,12 @@ function blosc2_decompress_ctx(ctx::Ptr{blosc2_context}, src, srcsize, dest, des
         )::Cint
 end
 
+"""
+    blosc2_getitem_ctx(ctx::Ptr{blosc2_context}, src, srcsize, start, nitems, dest, destsize)
+
+Context interface counterpart for `Lib.blosc_getitem`.
+
+"""
 function blosc2_getitem_ctx(ctx::Ptr{blosc2_context}, src, srcsize, start, nitems, dest, destsize)
     @ccall lib.blosc2_getitem_ctx(
             ctx::Ptr{blosc2_context}, src::Ptr{Cvoid}, srcsize::Int32,  start::Cint, nitems::Cint, dest::Ptr{Cvoid}, destsize::Int32
@@ -198,11 +204,11 @@ Once a call to `blosc2_decompress_ctx` is done, this mask is reset so that next 
 
 Returns
 If success, a 0 values is returned. An error is signaled with a negative int.
-
 """
 function blosc2_set_maskout(ctx::Ptr{blosc2_context}, maskout::DenseArray{Bool}, nblocks)
     @ccall lib.blosc2_set_maskout(ctx::Ptr{blosc2_context}, maskout::Ptr{Bool}, nblocks::Cint)::Cint
 end
+
 """
     blosc2_ctx_get_cparams(ctx::Ptr{blosc2_context})
 

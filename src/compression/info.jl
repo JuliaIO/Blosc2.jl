@@ -29,7 +29,7 @@ Base.@propagate_inbounds uncompressed_sizeof(buff::Vector{UInt8}, offset = 1) = 
 """
     uncompressed_length(::Type{T}, buff::Vector{UInt8}, offset = 1)
 
-Uncompressed length of `Vector{T}`` then decompressed from buffer `buff`
+Uncompressed length of `Vector{T}` then decompressed from buffer `buff`
 """
 Base.@propagate_inbounds uncompressed_length(::Type{T},buff::Vector{UInt8}, offset = 1) where {T} = ceil(Int, sizes(buff)[1] / sizeof(T))
 

@@ -3,7 +3,6 @@
 
 The maximum overhead during compression in bytes.
 """
-
 max_compression_overhead() = Lib.BLOSC_MAX_OVERHEAD
 
 """
