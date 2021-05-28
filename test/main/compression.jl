@@ -8,7 +8,7 @@ using Blosc2: Compressor, fill_available_compressors!, available_compressors, av
 
     @test Blosc2.default_compressor_name() == :blosclz
 
-    @test Blosc2.compressor(:blosclz) == Blosc2.default_compressor()
+    @test Blosc2.compressor_by_name(:blosclz) == Blosc2.default_compressor()
 end
 
 @testset "params" begin
@@ -18,7 +18,7 @@ end
     @test params.typesize == sizeof(Int32)
     @test params.compressor.name == :blosclz
 
-    params = Blosc2.CompressionParams(:lz4, Int8; level = 9, nthreads = 3, blocksize = 10, splitmode = true)
+    params = Blosc2.CompressionParams(Int8; compressor = :lz4, level = 9, nthreads = 3, blocksize = 10, splitmode = true)
     @test params.typesize == sizeof(Int8)
     @test params.compressor.name == :lz4
     @test params.level == 9
@@ -52,6 +52,12 @@ end
     @test typeof(ctx) == Blosc2.CompressionContext
     @test typeof(ctx.params) == Blosc2.CompressionParams
 
+    ctx = Blosc2.CompressionContext(level = 8, nthreads = 2)
+    @test ctx.params.nthreads == 2
+    @test ctx.params.level == 8
+    @test typeof(ctx) == Blosc2.CompressionContext
+    @test typeof(ctx.params) == Blosc2.CompressionParams
+
     ctx = Blosc2.CompressionContext()
     @test ctx.params == Blosc2.CompressionParams()
     @test typeof(ctx.params) == Blosc2.CompressionParams
@@ -67,18 +73,157 @@ end
     @test typeof(ctx) == Blosc2.DecompressionContext
     @test typeof(ctx.params) == Blosc2.DecompressionParams
 
+    ctx = Blosc2.DecompressionContext(nthreads = 3)
+    @test ctx.params.nthreads == 3
+    @test typeof(ctx) == Blosc2.DecompressionContext
+    @test typeof(ctx.params) == Blosc2.DecompressionParams
+
     ctx = Blosc2.DecompressionContext()
     @test typeof(ctx.params) == Blosc2.DecompressionParams
     @test ctx.params == Blosc2.DecompressionParams()
 
+    ctx = CompressionContext(Int32)
+    @test ctx.params.typesize == 4
+    ctx = CompressionContext(Int32, typesize = 2)
+    @test ctx.params.typesize == 2
 end
 
-@testset "compress/decompress" begin
+@testset "compress!/decompress!/info" begin
     n = 10000
     data = rand(1:1000, n)
     buffer = Blosc2.make_compress_buffer(data)
     sz = Blosc2.compress!(Blosc2.CompressionContext(), buffer, data)
+    @test Blosc2.compressed_sizeof(buffer) == sz
+    @test Blosc2.uncompressed_sizeof(buffer) == n * sizeof(Int64)
     res = Vector{Int64}(undef, n)
     Blosc2.decompress!(Blosc2.DecompressionContext(),  res, buffer)
     @test res == data
+
+    res = Vector{Int64}(undef, ceil(Int64, n/2))
+    @test_throws BoundsError Blosc2.decompress!(Blosc2.DecompressionContext(),  res, buffer)
+
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    sz = Blosc2.compress!(buffer, data)
+    @test Blosc2.compressed_sizeof(buffer) == sz
+    @test Blosc2.uncompressed_sizeof(buffer) == n * sizeof(Int64)
+    res = Vector{Int64}(undef, n)
+    Blosc2.decompress!(res, buffer)
+    @test res == data
+
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    sz = Blosc2.compress!(buffer, data; level = 0)
+    @test Blosc2.compressed_sizeof(buffer) == sz
+    @test sz == sizeof(buffer)
+    @test Blosc2.uncompressed_sizeof(buffer) == n * sizeof(Int64)
+    res = Vector{Int64}(undef, n)
+    dsz = Blosc2.decompress!(res, buffer)
+    @test dsz == n
+    @test res == data
+end
+
+@testset "compress/decompress" begin
+    n = 100000
+    data = rand(1:1000, n)
+    buffer = compress(CompressionContext(), data)
+    @test sizeof(buffer) > 0
+    @test sizeof(buffer) < max_compressed_size(data)
+    res = decompress(DecompressionContext(), Int, buffer)
+    @test res == data
+
+    data = rand(Base.OneTo{Int16}(1000), n)
+    buffer = compress(data, level = 9)
+    @test sizeof(buffer) > 0
+    @test sizeof(buffer) < max_compressed_size(data)
+    res = decompress(Int16, buffer, nthreads = 2)
+    @test res == data
+
+end
+
+@testset "unsafe compress/decompress" begin
+    n = 10000
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    sz = GC.@preserve data buffer begin
+        unsafe_compress!(CompressionContext(), pointer(buffer), sizeof(buffer), pointer(data), sizeof(data))
+    end
+    @test sz > 0
+    res = Vector{Int64}(undef, n)
+    dsz = GC.@preserve data buffer begin
+        unsafe_decompress!(DecompressionContext(), pointer(res), sizeof(res), pointer(buffer), sizeof(buffer))
+    end
+    @test dsz == n
+    @test res == data
+
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    sz = GC.@preserve data buffer begin
+        unsafe_compress!(pointer(buffer), sizeof(buffer), pointer(data), sizeof(data), level = 1)
+    end
+    @test sz > 0
+    res = Vector{Int64}(undef, n)
+    dsz = GC.@preserve data buffer begin
+        unsafe_decompress!(pointer(res), sizeof(res), pointer(buffer), sizeof(buffer), nthreads = 2)
+    end
+    @test dsz == n
+    @test res == data
+end
+
+@testset "offsets compress/decompress" begin
+    n = 10000
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    pos = 1
+    sz = compress!(CompressionContext(),buffer, pos, data, 1, 500)
+    @test sz > 0
+    pos += sz
+    sz = compress!(CompressionContext(),buffer, pos, data, 501, 500)
+    @test sz > 0
+    result = Vector{Int64}(undef, 1500)
+
+    sz = decompress!(DecompressionContext(), result, 501, buffer, pos)
+    @test sz == 500
+    @test result[501:1000] == data[501:1000]
+
+    sz = decompress!(DecompressionContext(), result, 1001, buffer, 1)
+    @test sz == 500
+    @test result[1001:1500] == data[1:500]
+
+    n = 10000
+    data = rand(Base.OneTo{Int16}(1000), n)
+    buffer = Blosc2.make_compress_buffer(data)
+    pos = 1
+    sz = compress!(buffer, pos, data, 1, 500)
+    @test sz > 0
+    pos += sz
+    sz = compress!(buffer, pos, data, 501, 500)
+    @test sz > 0
+    result = Vector{Int16}(undef, 1500)
+
+    sz = decompress!(result, 501, buffer, pos)
+    @test sz == 500
+    @test result[501:1000] == data[501:1000]
+
+    sz = decompress!(result, 1001, buffer, 1)
+    @test sz == 500
+    @test result[1001:1500] == data[1:500]
+end
+
+@testset "decompress_items!" begin
+    n = 10000
+    data = rand(1:1000, n)
+    buffer = Blosc2.make_compress_buffer(data)
+    pos = 1
+    sz = compress!(CompressionContext(),buffer, pos, data, 1, 500)
+    @test sz > 0
+    pos += sz
+    sz = compress!(CompressionContext(),buffer, pos, data, 501, 500)
+    @test sz > 0
+    result = Vector{Int64}(undef, 1500)
+
+    r = decompress_items!(DecompressionContext(), result, 50, buffer, pos, 11:20)
+    @test r == 10
+    @test result[50:59] == data[511:520]
+
 end

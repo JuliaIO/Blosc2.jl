@@ -60,7 +60,7 @@ has_compressor(name::Symbol) = haskey(_available_compressors, name)
 
 Get compressor by name
 """
-function compressor(name::Symbol)
+function compressor_by_name(name::Symbol)
     !has_compressor(name) && throw(KeyError(name))
     _available_compressors[name]
 end

@@ -6,7 +6,7 @@ abstract type Params end;
 Compression params
 
     CompressionParams(;
-            compressor ::Compressor = default_compressor()
+            compressor ::Symbol = default_compressor_name()
             level ::UInt8 = 5
             typesize ::Int32 = 8
             nthreads ::Int32 = 1
@@ -17,7 +17,7 @@ Create compression parameters
 
 # Arguments
 
-- `compressor` - The compressor to use
+- `compressor::Symbol` - The name of compressor to use
 - `level` - The compression level from 0 (no compression) to 9 (maximum compression)
 - `typesize` - The size of type being compressed
 - `nthreads` - The number of threads to use internally
@@ -41,7 +41,7 @@ struct CompressionParams <: Params
     blocksize ::Int32
     splitmode ::Bool
     function CompressionParams(;
-        compressor ::Compressor = default_compressor(),
+        compressor ::Symbol = default_compressor_name(),
         level = 5,
         typesize = 8,
         nthreads = 1,
@@ -50,7 +50,7 @@ struct CompressionParams <: Params
     )
         !(level in 0:9) && throw(ArgumentError("level must be in 0:9 range"))
         return new(
-            compressor,
+            compressor_by_name(compressor),
             level,
             typesize,
             nthreads,
@@ -60,15 +60,18 @@ struct CompressionParams <: Params
     end
 end
 
-function CompressionParams(cname::Symbol, ::Type{T}; kwargs...) where {T}
-    !isbitstype(T) && throw(ArgumentError("Only bits types can be compressed directly"))
+"""
+    CompressionParams(::Type{T}; kwargs...)
+
+Create `CompressionParams` for compressing vectors with element type `T`.
+This is equivalent to `CompressionParams(;typesize = sizeof(T), kwargs...)`
+"""
+function CompressionParams(::Type{T}; kwargs...) where {T}
     return CompressionParams(;
-        compressor = compressor(cname),
         typesize = sizeof(T),
         kwargs...
     )
 end
-CompressionParams(::Type{T}; kwargs...) where {T} = CompressionParams(default_compressor_name(), T; kwargs...)
 
 
 function make_cparams(p::CompressionParams)

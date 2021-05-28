@@ -1,3 +1,5 @@
 include("params.jl")
 include("context.jl")
+include("info.jl")
 include("compress.jl")
+include("decompress.jl")
