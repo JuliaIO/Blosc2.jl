@@ -16,7 +16,5 @@ makedocs(
 
 deploydocs(
     repo = "github.com/waralex/Blosc2.jl.git",
-    target = "build",
-    deps = nothing,
-    make = nothing
+    target = "build"
 )
