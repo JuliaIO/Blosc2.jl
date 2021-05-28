@@ -5,6 +5,12 @@ struct blosc2_metalayer_unsafe
   content_len::Int32 #!< The length in bytes of the content.
 end
 
+"""
+    blosc2_storage
+
+This struct is meant for holding storage parameters for a for a blosc2 container,
+allowing to specify, for example, how to interpret the contents included in the schunk.
+"""
 struct blosc2_storage
 
     contiguous ::Bool #!< Whether the chunks are contiguous or sparse.
@@ -22,6 +28,14 @@ struct blosc2_storage
     ) = new(contiguous, urlpath, cparams, dparams, io)
 end
 
+"""
+    blosc2_schunk
+
+This struct is the standard container for Blosc 2 compressed data.
+
+This is essentially a container for Blosc 1 chunks of compressed data, and it allows to overcome the 32-bit limitation in Blosc 1.
+Optionally, a blosc2_frame can be attached so as to store the compressed chunks contiguously.
+"""
 struct blosc2_schunk
     version ::UInt8
     compcode ::UInt8 #!< The default compressor. Each chunk can override this.

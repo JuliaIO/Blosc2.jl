@@ -6,6 +6,11 @@ version = "0.1.0"
 [deps]
 Blosc2_jll = "d43303dc-dd0e-56c6-b0a8-331f4c8c9bfb"
 
+[compat]
+julia = "1.6"
+Blosc2_jll = "2.0.0"
+
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 

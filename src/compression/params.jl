@@ -6,12 +6,14 @@ abstract type Params end;
 Compression params
 
     CompressionParams(;
-            compressor ::Symbol = default_compressor_name()
-            level ::UInt8 = 5
-            typesize ::Int32 = 8
-            nthreads ::Int32 = 1
-            blocksize ::Int32 = 0
-        )
+        compressor ::Symbol = default_compressor_name()
+        level ::UInt8 = 5
+        typesize ::Int32 = 8
+        nthreads ::Int32 = 1
+        blocksize ::Int32 = 0
+        splitmode ::Bool = false
+        filter_pipeline ::FilterPipeline = filter_pipeline(:shuffle)
+    )
 
 Create compression parameters
 
@@ -23,15 +25,7 @@ Create compression parameters
 - `nthreads` - The number of threads to use internally
 - `blocksize` - The requested size of the compressed blocks (0 means auto)
 - `splitmode` - Whether the blocks should be split or not.
-
-
-    CompressionParams([cname = default_compressor_name()], ::Type{T}; kwargs...)
-
-Create compression parameters for compression array of type `T` with compressor name `cname`
-
-
-
-TODO filters support
+- `filter_pipeline` - Filters pipeline
 """
 struct CompressionParams <: Params
     compressor ::Compressor
@@ -40,13 +34,15 @@ struct CompressionParams <: Params
     nthreads ::Int32
     blocksize ::Int32
     splitmode ::Bool
+    filter_pipeline ::FilterPipeline
     function CompressionParams(;
         compressor ::Symbol = default_compressor_name(),
         level = 5,
         typesize = 8,
         nthreads = 1,
         blocksize = 0,
-        splitmode = false
+        splitmode = false,
+        filter_pipeline = filter_pipeline(:shuffle)
     )
         !(level in 0:9) && throw(ArgumentError("level must be in 0:9 range"))
         return new(
@@ -55,7 +51,8 @@ struct CompressionParams <: Params
             typesize,
             nthreads,
             blocksize,
-            splitmode
+            splitmode,
+            filter_pipeline
             )
     end
 end
@@ -81,7 +78,9 @@ function make_cparams(p::CompressionParams)
         typesize = p.typesize,
         nthreads = p.nthreads,
         blocksize = p.blocksize,
-        splitmode = p.splitmode ? 1 : 0
+        splitmode = p.splitmode ? 1 : 0,
+        filters = getproperty.(p.filter_pipeline.filters, :id),
+        filters_meta = getproperty.(p.filter_pipeline.filters, :meta)
     )
 end
 
@@ -93,8 +92,6 @@ Decompression params
     DecomplessionParams(;nthreads = 1)
 
 Create decompression parameters
-
-TODO filters support
 """
 struct DecompressionParams <: Params
     nthreads ::Int32

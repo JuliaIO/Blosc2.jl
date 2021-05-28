@@ -1,4 +1,18 @@
 """
+    blosc_compcode_to_compname(compcode)
+
+Get the compressor name associated with the compressor code.
+
+C signature `int blosc_compcode_to_compname(int compcode, const char **compname)`
+"""
+function blosc_compcode_to_compname(compcode)
+    compname = Ref{Cstring}()
+    r = @ccall lib.blosc_compcode_to_compname(compcode::Cint, compname::Ref{Cstring})::Cint
+    (r == -1 || compname[] == C_NULL) && error("compressor code $compcode is not recognized, or there is not support for it in this build")
+    return unsafe_string(compname[])
+end
+
+"""
     blosc_compname_to_compcode(compname)
 
 Get the compressor code associated with the compressor name.

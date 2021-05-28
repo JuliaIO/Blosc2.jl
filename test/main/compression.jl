@@ -11,6 +11,52 @@ using Blosc2: Compressor, fill_available_compressors!, available_compressors, av
     @test Blosc2.compressor_by_name(:blosclz) == Blosc2.default_compressor()
 end
 
+@testset "filters" begin
+    @test has_filter(:shuffle)
+    @test !has_filter(:shuffle2)
+
+    f = Blosc2.make_filter(:nofilter)
+    @test f.id == 0
+    @test f.meta == 0
+
+    f = Blosc2.make_filter(:delta, 10)
+    @test f.id == Blosc2.Lib.BLOSC_DELTA
+    @test f.meta == 10
+
+    @test :shuffle in available_filter_names()
+
+    @test filter_description(:nofilter) == "No filter."
+
+    pipe = filter_pipeline(:nofilter, :trunc_prec=>22, :shuffle)
+    @test pipe.filters[1].name == :nofilter
+    @test pipe.filters[1].id == 0
+    @test pipe.filters[1].meta == 0
+
+
+    @test pipe.filters[2].name == :trunc_prec
+    @test pipe.filters[2].id == Blosc2.Lib.BLOSC_TRUNC_PREC
+    @test pipe.filters[2].meta == 22
+
+    @test pipe.filters[3].name == :shuffle
+    @test pipe.filters[3].id == Blosc2.Lib.BLOSC_SHUFFLE
+    @test pipe.filters[3].meta == 0
+
+    for i in 4:Blosc2.max_filters_count()
+        @test pipe.filters[i].name == :nofilter
+        @test pipe.filters[i].id == 0
+        @test pipe.filters[i].meta == 0
+
+    end
+    pipe = filter_pipeline()
+    for i in 1:Blosc2.max_filters_count()
+        @test pipe.filters[i].name == :nofilter
+        @test pipe.filters[i].id == 0
+        @test pipe.filters[i].meta == 0
+
+    end
+
+end
+
 @testset "params" begin
     params = Blosc2.CompressionParams()
     @test params.compressor.code == default_compressor().code
@@ -33,6 +79,14 @@ end
     @test cp.nthreads == 3
     @test cp.blocksize == 10
     @test cp.splitmode == 1
+    @test cp.filters == (Blosc2.Lib.BLOSC_SHUFFLE, 0, 0, 0, 0, 0)
+    @test cp.filters_meta == (0, 0, 0, 0, 0, 0)
+
+    params = Blosc2.CompressionParams(Int8; filter_pipeline = filter_pipeline(:trunc_prec=>22, :shuffle))
+    cp = Blosc2.make_cparams(params)
+    @test cp.filters == (Blosc2.Lib.BLOSC_TRUNC_PREC, Blosc2.Lib.BLOSC_SHUFFLE, 0, 0, 0, 0)
+    @test cp.filters_meta == (22, 0, 0, 0, 0, 0)
+
 
     dparams = Blosc2.DecompressionParams(nthreads = 10)
     dp = Blosc2.make_dparams(dparams)
@@ -237,4 +291,16 @@ end
     @test r == 10
     @test result[1:10] == data[11:20]
 
+end
+
+@testset "filters test" begin
+    n = 10000
+    data = rand(1:1000, n)
+    buffer = compress(data)
+    sz1 = sizeof(buffer)
+    sdata = sort(data)
+    sbuffer = compress(sdata, filter_pipeline = filter_pipeline(:delta, :shuffle))
+    sz2 = sizeof(sbuffer)
+    @test sz2 < sz1
+    @test decompress(Int, sbuffer) == sdata
 end
