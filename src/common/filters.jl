@@ -10,7 +10,7 @@ struct Filter
     meta ::UInt8
 end
 
-max_filters_count() = Lib.BLOSC2_MAX_FILTERS
+max_filters_count() = Int64(Lib.BLOSC2_MAX_FILTERS)
 
 struct FilterPipeline
     filters ::NTuple{max_filters_count(), Filter}
@@ -44,11 +44,11 @@ add_available_filter(name::Symbol, id::Integer, description::AbstractString = ""
          _available_filters[name] = FilterDef(name, id, description)
 
 function fill_buildin_filters()
-    add_available_filter(:nofilter, Lib.BLOSC_NOFILTER, "No filter.")
-    add_available_filter(:shuffle, Lib.BLOSC_SHUFFLE, "Byte-wise shuffle.")
-    add_available_filter(:bitshuffle, Lib.BLOSC_BITSHUFFLE, "Bit-wise shuffle.")
-    add_available_filter(:delta, Lib.BLOSC_DELTA, "Delta filter.")
-    add_available_filter(:trunc_prec, Lib.BLOSC_TRUNC_PREC, "Truncate precision filter.")
+    add_available_filter(:nofilter, UInt8(Lib.BLOSC_NOFILTER), "No filter.")
+    add_available_filter(:shuffle, UInt8(Lib.BLOSC_SHUFFLE), "Byte-wise shuffle.")
+    add_available_filter(:bitshuffle, UInt8(Lib.BLOSC_BITSHUFFLE), "Bit-wise shuffle.")
+    add_available_filter(:delta, UInt8(Lib.BLOSC_DELTA), "Delta filter.")
+    add_available_filter(:trunc_prec, UInt8(Lib.BLOSC_TRUNC_PREC), "Truncate precision filter.")
 end
 
 """

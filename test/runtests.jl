@@ -1,4 +1,4 @@
 using Test
-include("lib/lib.jl")
+using Blosc2
 include("main/main.jl")
 include("dev.jl")

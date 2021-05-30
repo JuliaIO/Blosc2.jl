@@ -73,14 +73,20 @@ end
 
 function make_cparams(p::CompressionParams)
     return Lib.blosc2_cparams(
-        compcode = p.compressor.code,
-        clevel = p.level,
-        typesize = p.typesize,
-        nthreads = p.nthreads,
-        blocksize = p.blocksize,
-        splitmode = p.splitmode ? 1 : 0,
-        filters = getproperty.(p.filter_pipeline.filters, :id),
-        filters_meta = getproperty.(p.filter_pipeline.filters, :meta)
+        p.compressor.code,
+        0,
+        p.level,
+        0,
+        p.typesize,
+        p.nthreads,
+        p.blocksize,
+        p.splitmode ? 1 : 0,
+        C_NULL,
+        getproperty.(p.filter_pipeline.filters, :id),
+        getproperty.(p.filter_pipeline.filters, :meta),
+        C_NULL,
+        C_NULL,
+        C_NULL
     )
 end
 
@@ -102,6 +108,6 @@ end
 
 function make_dparams(p::DecompressionParams)
     return Lib.blosc2_dparams(
-        nthreads = p.nthreads
+        p.nthreads, C_NULL, C_NULL, C_NULL
     )
 end

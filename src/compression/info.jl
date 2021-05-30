@@ -1,6 +1,13 @@
 function unsafe_sizes(buff::Ptr{UInt8})
-    r = Lib.blosc_cbuffer_sizes(buff)
-    return (r.nbytes, r.cbytes)
+    nbytes = Ref{Int32}()
+    cbytes = Ref{Int32}()
+    blocksize = Ref{Int32}()
+    r = Lib.blosc2_cbuffer_sizes(buff, nbytes, cbytes, blocksize)
+    r < 0 && error("buffer is not valid compressed buffer")
+    return (
+        nbytes[],
+        cbytes[]
+    )
 end
 
 """
@@ -14,8 +21,7 @@ Get information about a compressed buffer at offset `offset` (1-indexed), as Tup
 """
 function sizes(buff::Vector{UInt8}, offset = 1)
     @boundscheck checkbounds(buff, offset)
-    r = GC.@preserve buff Lib.blosc_cbuffer_sizes(pointer(buff, offset))
-    return (r.nbytes, r.cbytes)
+    return GC.@preserve buff unsafe_sizes(pointer(buff, offset))
 end
 
 

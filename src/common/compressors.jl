@@ -10,17 +10,31 @@ struct Compressor
     version ::String
 end
 
+
 function fill_available_compressors!(dict::Dict{Symbol, Compressor})
-    names = Lib.blosc_list_compressors()
+    names = split(
+        unsafe_string(
+            Lib.blosc_list_compressors()
+        ), ","
+    )
     for n in names
-        code, complib, version = Lib.blosc_get_complib_info(n)
+        complib = Ref{Cstring}()
+        version = Ref{Cstring}()
+        code = Lib.blosc_get_complib_info(n, complib, version)
         code < 0 && continue
-        dict[Symbol(n)] = Compressor(Symbol(n),complib, code, version)
+        dict[Symbol(n)] = Compressor(Symbol(n), unsafe_string(complib[]), code, unsafe_string(version[]))
     end
 end
 
+function compname_by_code(code)
+    compname = Ref{Cstring}()
+    r = Lib.blosc_compcode_to_compname(code, compname)
+    (r == -1 || compname[] == C_NULL) && error("compressor code $compcode is not recognized, or there is not support for it in this build")
+    return unsafe_string(compname[])
+end
+
 function _get_default_compressor_name()
-    name = Lib.blosc_compcode_to_compname(0)
+    name = compname_by_code(0)
     return Symbol(name)
 end
 

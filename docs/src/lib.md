@@ -73,6 +73,9 @@ Corresponding c-blosc2 [documentation](https://c-blosc2.readthedocs.io/en/latest
 Lib.blosc2_cparams
 Lib.blosc2_schunk
 Lib.blosc2_schunk_new
+Lib.blosc2_schunk_copy
+Lib.blosc2_schunk_from_buffer
+Lib.blosc2_schunk_open
 Lib.blosc2_schunk_free
 Lib.blosc2_schunk_append_buffer
 Lib.blosc2_schunk_decompress_chunk

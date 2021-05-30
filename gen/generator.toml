@@ -1,0 +1,27 @@
+[general]
+library_name = "libblosc2"
+output_file_path = "../src/lib/generated.jl"
+module_name = ""
+jll_pkg_name = "Blosc2_jll"
+printer_blacklist = [
+    "CINDEX_EXPORTS",
+    "CINDEX_VERSION",
+    "CINDEX_VERSION_STRING",
+    "CINDEX_LINKAGE",
+    "CINDEX_DEPRECATED",
+    "LLVM_CLANG_C_STRICT_PROTOTYPES_BEGIN",
+    "LLVM_CLANG_C_STRICT_PROTOTYPES_END",
+    "LLVM_CLANG_C_EXTERN_C_BEGIN",
+    "LLVM_CLANG_C_EXTERN_C_END",
+    "BLOSC_GCC_VERSION"
+]
+[codegen]
+use_ccall_macro = true
+always_NUL_terminated_string = true
+field_access_method_list = [
+    "blosc2_cparams",
+    "blosc2_dparams",
+    "blosc2_storage",
+    "blosc2_metalayer",
+    "blosc2_schunk"
+]
