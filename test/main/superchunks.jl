@@ -47,7 +47,8 @@ end
 end
 
 @testset "schunk append buffer" begin
-    schunk = SChunk(Storage())
+    rm("test.bl2", force = true, recursive = true)
+    schunk = SChunk(Storage(urlpath = "test.bl2"))
     n = 100000
     data = rand(1:1000, n)
     r = GC.@preserve data begin
@@ -78,6 +79,7 @@ end
     @test res == data
 
     @test_throws BoundsError unsafe_decompress_chunk(schunk, 3, pointer(res), sizeof(res))
+    rm("test.bl2", force = true, recursive = true)
 end
 
 @testset "schunk unsafe chunk manipulations" begin
