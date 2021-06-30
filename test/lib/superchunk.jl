@@ -33,7 +33,7 @@ end
     sc = lb.blosc2_schunk_new()
     n = 10000
     chuncks_n = 5
-    ch_comp_sizes = Vector{Int32}(undef, chuncks_n)
+    ch_comp_sizes = Vector{Cint}(undef, chuncks_n)
     datas = Vector{Vector{Int}}(undef, chuncks_n)
     for i in 1:chuncks_n
         datas[i] = rand(1:1000, n)
