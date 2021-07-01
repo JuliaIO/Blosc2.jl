@@ -269,7 +269,7 @@ Reorder the chunk offsets of an existing super-chunk.
 
 0 if suceeds. Else a negative code is returned.
 """
-function blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Vector{Cint}})
+function blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Vector{Cint})
     @ccall lib.blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Ptr{Cint})::Cint
 end
 
