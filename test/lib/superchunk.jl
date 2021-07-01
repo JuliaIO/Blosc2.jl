@@ -28,20 +28,20 @@ end
     lb.blosc2_schunk_free(sc)
 end
 
-@testset "dealing with chuncks" begin
+@testset "dealing with chunks" begin
 
     sc = lb.blosc2_schunk_new()
     n = 10000
-    chuncks_n = 5
-    ch_comp_sizes = Vector{Int32}(undef, chuncks_n)
-    datas = Vector{Vector{Int}}(undef, chuncks_n)
-    for i in 1:chuncks_n
+    chunks_n = 5
+    ch_comp_sizes = Vector{Cint}(undef, chunks_n)
+    datas = Vector{Vector{Int}}(undef, chunks_n)
+    for i in 1:chunks_n
         datas[i] = rand(1:1000, n)
         sz = lb.blosc2_schunk_append_buffer(sc, datas[i], sizeof(datas[i]))
         @test sz > 0
         ch_comp_sizes[i] = sz
     end
-    @test unsafe_load(sc, 1).nchunks == chuncks_n
+    @test unsafe_load(sc, 1).nchunks == chunks_n
 
     buff = lb.blosc2_schunk_get_chunk(sc, 1)
     res = Vector{Int64}(undef, n + 500)
@@ -53,9 +53,9 @@ end
     @test res == datas[2]
 
     chn = lb.blosc2_schunk_append_chunk(sc, buff, true)
-    @test chn == chuncks_n + 1
+    @test chn == chunks_n + 1
 
-    buff = lb.blosc2_schunk_get_chunk(sc, chuncks_n)
+    buff = lb.blosc2_schunk_get_chunk(sc, chunks_n)
     res = Vector{Int64}(undef, n + 500)
     dctx = lb.blosc2_create_dctx()
     dsz = div(lb.blosc2_decompress_ctx(dctx, buff, sizeof(buff), res, sizeof(res)), sizeof(Int64))
@@ -65,7 +65,7 @@ end
     @test res == datas[2]
 
     chn = lb.blosc2_schunk_insert_chunk(sc, 2, buff, true)
-    @test chn == chuncks_n + 2
+    @test chn == chunks_n + 2
 
     buff = lb.blosc2_schunk_get_chunk(sc, 2)
     res = Vector{Int64}(undef, n + 500)
@@ -77,7 +77,7 @@ end
     @test res == datas[2]
 
     chn = lb.blosc2_schunk_update_chunk(sc, 1, buff, true)
-    @test chn == chuncks_n + 2
+    @test chn == chunks_n + 2
 
     buff = lb.blosc2_schunk_get_chunk(sc, 1)
     res = Vector{Int64}(undef, n + 500)
@@ -89,7 +89,7 @@ end
     @test res == datas[2]
 
     chn = lb.blosc2_schunk_delete_chunk(sc, 0)
-    @test chn == chuncks_n + 1
+    @test chn == chunks_n + 1
 
     buff = lb.blosc2_schunk_get_chunk(sc, 0)
     res = Vector{Int64}(undef, n + 500)
@@ -106,18 +106,18 @@ end
 @testset "blosc2_schunk_reorder_offsets" begin
     sc = lb.blosc2_schunk_new()
     n = 10000
-    chuncks_n = 5
-    ch_comp_sizes = Vector{Int32}(undef, chuncks_n)
-    datas = Vector{Vector{Int}}(undef, chuncks_n)
-    for i in 1:chuncks_n
+    chunks_n = 5
+    ch_comp_sizes = Vector{Int32}(undef, chunks_n)
+    datas = Vector{Vector{Int}}(undef, chunks_n)
+    for i in 1:chunks_n
         datas[i] = rand(1:1000, n)
         sz = lb.blosc2_schunk_append_buffer(sc, datas[i], sizeof(datas[i]))
         @test sz > 0
         ch_comp_sizes[i] = sz
     end
-    @test unsafe_load(sc, 1).nchunks == chuncks_n
+    @test unsafe_load(sc, 1).nchunks == chunks_n
 
-    offsets = Int32.(collect(0:chuncks_n-1))
+    offsets = Int32.(collect(0:chunks_n-1))
     offsets[4] = 0
     offsets[1] = 3
 
