@@ -10,7 +10,39 @@ struct timespec
     tv_nsec::Clong
 end
 
-@cenum var"##Ctag#262"::UInt32 begin
+struct blosc2_stdio_file
+    file::Ptr{Libc.FILE}
+end
+
+function blosc2_stdio_open(urlpath, mode, params)
+    @ccall libblosc2.blosc2_stdio_open(urlpath::Cstring, mode::Cstring, params::Ptr{Cvoid})::Ptr{Cvoid}
+end
+
+function blosc2_stdio_close(stream)
+    @ccall libblosc2.blosc2_stdio_close(stream::Ptr{Cvoid})::Cint
+end
+
+function blosc2_stdio_tell(stream)
+    @ccall libblosc2.blosc2_stdio_tell(stream::Ptr{Cvoid})::Int64
+end
+
+function blosc2_stdio_seek(stream, offset, whence)
+    @ccall libblosc2.blosc2_stdio_seek(stream::Ptr{Cvoid}, offset::Int64, whence::Cint)::Cint
+end
+
+function blosc2_stdio_write(ptr, size, nitems, stream)
+    @ccall libblosc2.blosc2_stdio_write(ptr::Ptr{Cvoid}, size::Int64, nitems::Int64, stream::Ptr{Cvoid})::Int64
+end
+
+function blosc2_stdio_read(ptr, size, nitems, stream)
+    @ccall libblosc2.blosc2_stdio_read(ptr::Ptr{Cvoid}, size::Int64, nitems::Int64, stream::Ptr{Cvoid})::Int64
+end
+
+function blosc2_stdio_truncate(stream, size)
+    @ccall libblosc2.blosc2_stdio_truncate(stream::Ptr{Cvoid}, size::Int64)::Cint
+end
+
+@cenum var"##Ctag#263"::UInt32 begin
     BLOSC_VERSION_FORMAT_PRE1 = 1
     BLOSC1_VERSION_FORMAT = 2
     BLOSC2_VERSION_FORMAT_ALPHA = 3
@@ -18,13 +50,13 @@ end
     BLOSC_VERSION_FORMAT = 4
 end
 
-@cenum var"##Ctag#263"::UInt32 begin
+@cenum var"##Ctag#264"::UInt32 begin
     BLOSC2_VERSION_FRAME_FORMAT_BETA2 = 1
     BLOSC2_VERSION_FRAME_FORMAT_RC1 = 2
     BLOSC2_VERSION_FRAME_FORMAT = 2
 end
 
-@cenum var"##Ctag#264"::UInt32 begin
+@cenum var"##Ctag#265"::UInt32 begin
     BLOSC_MIN_HEADER_LENGTH = 16
     BLOSC_EXTENDED_HEADER_LENGTH = 32
     BLOSC_MAX_OVERHEAD = 32
@@ -33,15 +65,19 @@ end
     BLOSC_MIN_BUFFERSIZE = 128
 end
 
-@cenum var"##Ctag#265"::UInt32 begin
-    BLOSC2_BDEFINED_FILTERS = 32
-    BLOSC2_REGISTERED_FILTERS = 160
-    BLOSC2_UDEFINED_FILTERS = 256
+@cenum var"##Ctag#266"::UInt32 begin
+    BLOSC2_DEFINED_FILTERS_START = 0
+    BLOSC2_DEFINED_FILTERS_STOP = 31
+    BLOSC2_GLOBAL_REGISTERED_FILTERS_START = 32
+    BLOSC2_GLOBAL_REGISTERED_FILTERS_STOP = 159
+    BLOSC2_GLOBAL_REGISTERED_FILTERS = 2
+    BLOSC2_USER_REGISTERED_FILTERS_START = 128
+    BLOSC2_USER_REGISTERED_FILTERS_STOP = 255
     BLOSC2_MAX_FILTERS = 6
     BLOSC2_MAX_UDFILTERS = 16
 end
 
-@cenum var"##Ctag#266"::UInt32 begin
+@cenum var"##Ctag#267"::UInt32 begin
     BLOSC_NOSHUFFLE = 0
     BLOSC_NOFILTER = 0
     BLOSC_SHUFFLE = 1
@@ -49,33 +85,37 @@ end
     BLOSC_DELTA = 3
     BLOSC_TRUNC_PREC = 4
     BLOSC_LAST_FILTER = 5
-    BLOSC_LAST_REGISTERED_FILTER = 32
+    BLOSC_LAST_REGISTERED_FILTER = 33
 end
 
-@cenum var"##Ctag#267"::UInt32 begin
+@cenum var"##Ctag#268"::UInt32 begin
     BLOSC_DOSHUFFLE = 1
     BLOSC_MEMCPYED = 2
     BLOSC_DOBITSHUFFLE = 4
     BLOSC_DODELTA = 8
 end
 
-@cenum var"##Ctag#268"::UInt32 begin
+@cenum var"##Ctag#269"::UInt32 begin
     BLOSC2_USEDICT = 1
     BLOSC2_BIGENDIAN = 2
 end
 
-@cenum var"##Ctag#269"::UInt32 begin
+@cenum var"##Ctag#270"::UInt32 begin
     BLOSC2_MAXDICTSIZE = 131072
     BLOSC2_MAXBLOCKSIZE = 536866816
 end
 
-@cenum var"##Ctag#270"::UInt32 begin
-    BLOSC2_BDEFINED_CODECS = 32
-    BLOSC2_REGISTERED_CODECS = 160
-    BLOSC2_UDEFINED_CODECS = 256
+@cenum var"##Ctag#271"::UInt32 begin
+    BLOSC2_DEFINED_CODECS_START = 0
+    BLOSC2_DEFINED_CODECS_STOP = 31
+    BLOSC2_GLOBAL_REGISTERED_CODECS_START = 32
+    BLOSC2_GLOBAL_REGISTERED_CODECS_STOP = 159
+    BLOSC2_GLOBAL_REGISTERED_CODECS = 1
+    BLOSC2_USER_REGISTERED_CODECS_START = 160
+    BLOSC2_USER_REGISTERED_CODECS_STOP = 255
 end
 
-@cenum var"##Ctag#271"::UInt32 begin
+@cenum var"##Ctag#272"::UInt32 begin
     BLOSC_BLOSCLZ = 0
     BLOSC_LZ4 = 1
     BLOSC_LZ4HC = 2
@@ -85,7 +125,7 @@ end
     BLOSC_LAST_REGISTERED_CODEC = 32
 end
 
-@cenum var"##Ctag#272"::UInt32 begin
+@cenum var"##Ctag#273"::UInt32 begin
     BLOSC_BLOSCLZ_LIB = 0
     BLOSC_LZ4_LIB = 1
     BLOSC_ZLIB_LIB = 3
@@ -94,7 +134,7 @@ end
     BLOSC_SCHUNK_LIB = 7
 end
 
-@cenum var"##Ctag#273"::UInt32 begin
+@cenum var"##Ctag#274"::UInt32 begin
     BLOSC_BLOSCLZ_FORMAT = 0
     BLOSC_LZ4_FORMAT = 1
     BLOSC_LZ4HC_FORMAT = 1
@@ -103,7 +143,7 @@ end
     BLOSC_UDCODEC_FORMAT = 6
 end
 
-@cenum var"##Ctag#274"::UInt32 begin
+@cenum var"##Ctag#275"::UInt32 begin
     BLOSC_BLOSCLZ_VERSION_FORMAT = 1
     BLOSC_LZ4_VERSION_FORMAT = 1
     BLOSC_LZ4HC_VERSION_FORMAT = 1
@@ -112,14 +152,14 @@ end
     BLOSC_UDCODEC_VERSION_FORMAT = 1
 end
 
-@cenum var"##Ctag#275"::UInt32 begin
+@cenum var"##Ctag#276"::UInt32 begin
     BLOSC_ALWAYS_SPLIT = 1
     BLOSC_NEVER_SPLIT = 2
     BLOSC_AUTO_SPLIT = 3
     BLOSC_FORWARD_COMPAT_SPLIT = 4
 end
 
-@cenum var"##Ctag#276"::UInt32 begin
+@cenum var"##Ctag#277"::UInt32 begin
     BLOSC2_CHUNK_VERSION = 0
     BLOSC2_CHUNK_VERSIONLZ = 1
     BLOSC2_CHUNK_FLAGS = 2
@@ -132,7 +172,7 @@ end
     BLOSC2_CHUNK_BLOSC2_FLAGS = 31
 end
 
-@cenum var"##Ctag#277"::UInt32 begin
+@cenum var"##Ctag#278"::UInt32 begin
     BLOSC2_NO_SPECIAL = 0
     BLOSC2_SPECIAL_ZERO = 1
     BLOSC2_SPECIAL_NAN = 2
@@ -142,7 +182,7 @@ end
     BLOSC2_SPECIAL_MASK = 7
 end
 
-@cenum var"##Ctag#278"::Int32 begin
+@cenum var"##Ctag#279"::Int32 begin
     BLOSC2_ERROR_SUCCESS = 0
     BLOSC2_ERROR_FAILURE = -1
     BLOSC2_ERROR_STREAM = 2
@@ -276,13 +316,13 @@ function blosc_cbuffer_complib(cbuffer)
     @ccall libblosc2.blosc_cbuffer_complib(cbuffer::Ptr{Cvoid})::Cstring
 end
 
-@cenum var"##Ctag#279"::UInt32 begin
+@cenum var"##Ctag#280"::UInt32 begin
     BLOSC2_IO_FILESYSTEM = 0
     BLOSC_IO_LAST_BLOSC_DEFINED = 1
     BLOSC_IO_LAST_REGISTERED = 32
 end
 
-@cenum var"##Ctag#280"::UInt32 begin
+@cenum var"##Ctag#281"::UInt32 begin
     BLOSC2_IO_BLOSC_DEFINED = 32
     BLOSC2_IO_REGISTERED = 160
     BLOSC2_IO_USER_DEFINED = 256
@@ -782,13 +822,11 @@ const BLOSC_VERSION_MAJOR = 2
 
 const BLOSC_VERSION_MINOR = 0
 
-const BLOSC_VERSION_RELEASE = 0
+const BLOSC_VERSION_RELEASE = 1
 
-const BLOSC_VERSION_STRING = "2.0.0.rc.2.dev"
+const BLOSC_VERSION_STRING = "2.0.1"
 
-const BLOSC_VERSION_REVISION = "\$Rev\$"
-
-const BLOSC_VERSION_DATE = "\$Date:: 2021-05-06 #\$"
+const BLOSC_VERSION_DATE = "\$Date:: 2021-06-29 #\$"
 
 const BLOSC_BLOSCLZ_COMPNAME = "blosclz"
 
