@@ -9,7 +9,7 @@ Compression params
         compressor ::Symbol = default_compressor_name()
         level ::UInt8 = 5
         typesize ::Int32 = 8
-        nthreads ::Int32 = 1
+        nthreads ::Int16 = 1
         blocksize ::Int32 = 0
         splitmode ::Bool = false
         filter_pipeline ::FilterPipeline = filter_pipeline(:shuffle)
@@ -31,7 +31,7 @@ struct CompressionParams <: Params
     compressor ::Compressor
     level ::UInt8
     typesize ::Int32
-    nthreads ::Int32
+    nthreads ::Int16
     blocksize ::Int32
     splitmode ::Bool
     filter_pipeline ::FilterPipeline
@@ -100,7 +100,7 @@ Decompression params
 Create decompression parameters
 """
 struct DecompressionParams <: Params
-    nthreads ::Int32
+    nthreads ::Cint
     function DecompressionParams(;nthreads = 1)
         new(nthreads)
     end
