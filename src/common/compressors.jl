@@ -14,13 +14,13 @@ end
 function fill_available_compressors!(dict::Dict{Symbol, Compressor})
     names = split(
         unsafe_string(
-            Lib.blosc_list_compressors()
+            Lib.blosc2_list_compressors()
         ), ","
     )
     for n in names
         complib = Ref{Cstring}()
         version = Ref{Cstring}()
-        code = Lib.blosc_get_complib_info(n, complib, version)
+        code = Lib.blosc2_get_complib_info(n, complib, version)
         code < 0 && continue
         dict[Symbol(n)] = Compressor(Symbol(n), unsafe_string(complib[]), code, unsafe_string(version[]))
     end
@@ -28,7 +28,7 @@ end
 
 function compname_by_code(code)
     compname = Ref{Cstring}()
-    r = Lib.blosc_compcode_to_compname(code, compname)
+    r = Lib.blosc2_compcode_to_compname(code, compname)
     (r == -1 || compname[] == C_NULL) && error("compressor code $compcode is not recognized, or there is not support for it in this build")
     return unsafe_string(compname[])
 end
