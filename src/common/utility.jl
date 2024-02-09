@@ -4,8 +4,8 @@
 Executes f between `blosc_init()` and `blosc_destroy()`. Sutable for blosc1 api calls
 """
 function blosc_session(f)
-    Lib.blosc_init()
+    Lib.blosc2_init()
     res = f()
-    Lib.blosc_destroy()
+    Lib.blosc2_destroy()
     return res
 end
