@@ -40,14 +40,14 @@ function Storage(;
 end
 
 function with_preserved_blosc2_storage(f, s::Storage)
-    cparams = isnothing(s.cparams) ? nothing : make_cparams(s.cparams)
-    dparams = isnothing(s.dparams) ? nothing : make_dparams(s.dparams)
-    GC.@preserve s cparams dparams begin
+    r_cparams = isnothing(s.cparams) ? nothing : Ref(make_cparams(s.cparams))
+    r_dparams = isnothing(s.dparams) ? nothing : Ref(make_dparams(s.dparams))
+    GC.@preserve s r_cparams r_dparams begin
         bstorage = Lib.blosc2_storage(
             s.contiguous,
             isnothing(s.urlpath) ? C_NULL : Base.unsafe_convert(Cstring, s.urlpath),
-            isnothing(cparams) ? C_NULL : Base.unsafe_convert(Ptr{Lib.blosc2_cparams}, Ref(cparams)),
-            isnothing(dparams) ? C_NULL : Base.unsafe_convert(Ptr{Lib.blosc2_dparams}, Ref(dparams)),
+            isnothing(r_cparams) ? C_NULL : Base.unsafe_convert(Ptr{Lib.blosc2_cparams}, r_cparams),
+            isnothing(r_dparams) ? C_NULL : Base.unsafe_convert(Ptr{Lib.blosc2_dparams}, r_dparams),
             C_NULL
         )
         f(bstorage)
