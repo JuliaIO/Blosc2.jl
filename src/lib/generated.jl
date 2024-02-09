@@ -3,11 +3,15 @@ export Blosc2_jll
 
 using CEnum
 
-const __darwin_time_t = Clong
+const __time_t = Clong
 
 struct timespec
-    tv_sec::__darwin_time_t
+    tv_sec::__time_t
     tv_nsec::Clong
+end
+
+function print_error(rc)
+    @ccall libblosc2.print_error(rc::Cint)::Cstring
 end
 
 struct blosc2_stdio_file
@@ -42,42 +46,66 @@ function blosc2_stdio_truncate(stream, size)
     @ccall libblosc2.blosc2_stdio_truncate(stream::Ptr{Cvoid}, size::Int64)::Cint
 end
 
-@cenum var"##Ctag#263"::UInt32 begin
-    BLOSC_VERSION_FORMAT_PRE1 = 1
+@cenum var"##Ctag#248"::UInt32 begin
+    BLOSC1_VERSION_FORMAT_PRE1 = 1
     BLOSC1_VERSION_FORMAT = 2
     BLOSC2_VERSION_FORMAT_ALPHA = 3
     BLOSC2_VERSION_FORMAT_BETA1 = 4
-    BLOSC_VERSION_FORMAT = 4
+    BLOSC2_VERSION_FORMAT_STABLE = 5
+    BLOSC2_VERSION_FORMAT = 5
 end
 
-@cenum var"##Ctag#264"::UInt32 begin
+@cenum var"##Ctag#249"::UInt32 begin
     BLOSC2_VERSION_FRAME_FORMAT_BETA2 = 1
     BLOSC2_VERSION_FRAME_FORMAT_RC1 = 2
     BLOSC2_VERSION_FRAME_FORMAT = 2
 end
 
-@cenum var"##Ctag#265"::UInt32 begin
-    BLOSC_MIN_HEADER_LENGTH = 16
-    BLOSC_EXTENDED_HEADER_LENGTH = 32
-    BLOSC_MAX_OVERHEAD = 32
-    BLOSC_MAX_BUFFERSIZE = 2147483615
-    BLOSC_MAX_TYPESIZE = 255
-    BLOSC_MIN_BUFFERSIZE = 128
+struct blosc2_instr
+    cratio::Cfloat
+    cspeed::Cfloat
+    filter_speed::Cfloat
+    flags::NTuple{4, UInt8}
 end
 
-@cenum var"##Ctag#266"::UInt32 begin
+@cenum var"##Ctag#251"::UInt32 begin
+    BLOSC_MIN_HEADER_LENGTH = 16
+    BLOSC_EXTENDED_HEADER_LENGTH = 32
+    BLOSC2_MAX_OVERHEAD = 32
+    BLOSC2_MAX_BUFFERSIZE = 2147483615
+    BLOSC_MAX_TYPESIZE = 255
+    BLOSC_MIN_BUFFERSIZE = 32
+end
+
+@cenum var"##Ctag#252"::UInt32 begin
+    BLOSC2_DEFINED_TUNER_START = 0
+    BLOSC2_DEFINED_TUNER_STOP = 31
+    BLOSC2_GLOBAL_REGISTERED_TUNER_START = 32
+    BLOSC2_GLOBAL_REGISTERED_TUNER_STOP = 159
+    BLOSC2_GLOBAL_REGISTERED_TUNERS = 0
+    BLOSC2_USER_REGISTERED_TUNER_START = 160
+    BLOSC2_USER_REGISTERED_TUNER_STOP = 255
+end
+
+@cenum var"##Ctag#253"::UInt32 begin
+    BLOSC_STUNE = 0
+    BLOSC_LAST_TUNER = 1
+    BLOSC_LAST_REGISTERED_TUNE = 31
+end
+
+@cenum var"##Ctag#254"::UInt32 begin
     BLOSC2_DEFINED_FILTERS_START = 0
     BLOSC2_DEFINED_FILTERS_STOP = 31
     BLOSC2_GLOBAL_REGISTERED_FILTERS_START = 32
     BLOSC2_GLOBAL_REGISTERED_FILTERS_STOP = 159
-    BLOSC2_GLOBAL_REGISTERED_FILTERS = 2
-    BLOSC2_USER_REGISTERED_FILTERS_START = 128
+    BLOSC2_GLOBAL_REGISTERED_FILTERS = 5
+    BLOSC2_USER_REGISTERED_FILTERS_START = 160
     BLOSC2_USER_REGISTERED_FILTERS_STOP = 255
     BLOSC2_MAX_FILTERS = 6
     BLOSC2_MAX_UDFILTERS = 16
 end
 
-@cenum var"##Ctag#267"::UInt32 begin
+@cenum var"##Ctag#255"::UInt32 begin
     BLOSC_NOSHUFFLE = 0
     BLOSC_NOFILTER = 0
     BLOSC_SHUFFLE = 1
@@ -85,47 +113,48 @@ end
     BLOSC_DELTA = 3
     BLOSC_TRUNC_PREC = 4
     BLOSC_LAST_FILTER = 5
-    BLOSC_LAST_REGISTERED_FILTER = 33
+    BLOSC_LAST_REGISTERED_FILTER = 36
 end
 
-@cenum var"##Ctag#268"::UInt32 begin
+@cenum var"##Ctag#256"::UInt32 begin
     BLOSC_DOSHUFFLE = 1
     BLOSC_MEMCPYED = 2
     BLOSC_DOBITSHUFFLE = 4
     BLOSC_DODELTA = 8
 end
 
-@cenum var"##Ctag#269"::UInt32 begin
+@cenum var"##Ctag#257"::UInt32 begin
     BLOSC2_USEDICT = 1
     BLOSC2_BIGENDIAN = 2
+    BLOSC2_INSTR_CODEC = 128
 end
 
-@cenum var"##Ctag#270"::UInt32 begin
+@cenum var"##Ctag#258"::UInt32 begin
     BLOSC2_MAXDICTSIZE = 131072
     BLOSC2_MAXBLOCKSIZE = 536866816
 end
 
-@cenum var"##Ctag#271"::UInt32 begin
+@cenum var"##Ctag#259"::UInt32 begin
     BLOSC2_DEFINED_CODECS_START = 0
     BLOSC2_DEFINED_CODECS_STOP = 31
     BLOSC2_GLOBAL_REGISTERED_CODECS_START = 32
     BLOSC2_GLOBAL_REGISTERED_CODECS_STOP = 159
-    BLOSC2_GLOBAL_REGISTERED_CODECS = 1
+    BLOSC2_GLOBAL_REGISTERED_CODECS = 5
     BLOSC2_USER_REGISTERED_CODECS_START = 160
     BLOSC2_USER_REGISTERED_CODECS_STOP = 255
 end
 
-@cenum var"##Ctag#272"::UInt32 begin
+@cenum var"##Ctag#260"::UInt32 begin
     BLOSC_BLOSCLZ = 0
     BLOSC_LZ4 = 1
     BLOSC_LZ4HC = 2
     BLOSC_ZLIB = 4
     BLOSC_ZSTD = 5
     BLOSC_LAST_CODEC = 6
-    BLOSC_LAST_REGISTERED_CODEC = 32
+    BLOSC_LAST_REGISTERED_CODEC = 36
 end
 
-@cenum var"##Ctag#273"::UInt32 begin
+@cenum var"##Ctag#261"::UInt32 begin
     BLOSC_BLOSCLZ_LIB = 0
     BLOSC_LZ4_LIB = 1
     BLOSC_ZLIB_LIB = 3
@@ -134,7 +163,7 @@ end
     BLOSC_SCHUNK_LIB = 7
 end
 
-@cenum var"##Ctag#274"::UInt32 begin
+@cenum var"##Ctag#262"::UInt32 begin
     BLOSC_BLOSCLZ_FORMAT = 0
     BLOSC_LZ4_FORMAT = 1
     BLOSC_LZ4HC_FORMAT = 1
@@ -143,7 +172,7 @@ end
     BLOSC_UDCODEC_FORMAT = 6
 end
 
-@cenum var"##Ctag#275"::UInt32 begin
+@cenum var"##Ctag#263"::UInt32 begin
     BLOSC_BLOSCLZ_VERSION_FORMAT = 1
     BLOSC_LZ4_VERSION_FORMAT = 1
     BLOSC_LZ4HC_VERSION_FORMAT = 1
@@ -152,14 +181,14 @@ end
     BLOSC_UDCODEC_VERSION_FORMAT = 1
 end
 
-@cenum var"##Ctag#276"::UInt32 begin
+@cenum var"##Ctag#264"::UInt32 begin
     BLOSC_ALWAYS_SPLIT = 1
     BLOSC_NEVER_SPLIT = 2
     BLOSC_AUTO_SPLIT = 3
     BLOSC_FORWARD_COMPAT_SPLIT = 4
 end
 
-@cenum var"##Ctag#277"::UInt32 begin
+@cenum var"##Ctag#265"::UInt32 begin
     BLOSC2_CHUNK_VERSION = 0
     BLOSC2_CHUNK_VERSIONLZ = 1
     BLOSC2_CHUNK_FLAGS = 2
@@ -172,7 +201,7 @@ end
     BLOSC2_CHUNK_BLOSC2_FLAGS = 31
 end
 
-@cenum var"##Ctag#278"::UInt32 begin
+@cenum var"##Ctag#266"::UInt32 begin
     BLOSC2_NO_SPECIAL = 0
     BLOSC2_SPECIAL_ZERO = 1
     BLOSC2_SPECIAL_NAN = 2
@@ -182,10 +211,10 @@ end
     BLOSC2_SPECIAL_MASK = 7
 end
 
-@cenum var"##Ctag#279"::Int32 begin
+@cenum var"##Ctag#267"::Int32 begin
     BLOSC2_ERROR_SUCCESS = 0
     BLOSC2_ERROR_FAILURE = -1
-    BLOSC2_ERROR_STREAM = 2
+    BLOSC2_ERROR_STREAM = -2
     BLOSC2_ERROR_DATA = -3
     BLOSC2_ERROR_MEMORY_ALLOC = -4
     BLOSC2_ERROR_READ_BUFFER = -5
@@ -215,26 +244,31 @@ end
     BLOSC2_ERROR_SCHUNK_SPECIAL = -29
     BLOSC2_ERROR_PLUGIN_IO = -30
     BLOSC2_ERROR_FILE_REMOVE = -31
+    BLOSC2_ERROR_NULL_POINTER = -32
+    BLOSC2_ERROR_INVALID_INDEX = -33
+    BLOSC2_ERROR_METALAYER_NOT_FOUND = -34
+    BLOSC2_ERROR_MAX_BUFSIZE_EXCEEDED = -35
+    BLOSC2_ERROR_TUNER = -36
 end
 
-function blosc_init()
-    @ccall libblosc2.blosc_init()::Cvoid
+function blosc2_init()
+    @ccall libblosc2.blosc2_init()::Cvoid
 end
 
-function blosc_destroy()
-    @ccall libblosc2.blosc_destroy()::Cvoid
+function blosc2_destroy()
+    @ccall libblosc2.blosc2_destroy()::Cvoid
 end
 
-function blosc_compress(clevel, doshuffle, typesize, nbytes, src, dest, destsize)
-    @ccall libblosc2.blosc_compress(clevel::Cint, doshuffle::Cint, typesize::Csize_t, nbytes::Csize_t, src::Ptr{Cvoid}, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
+function blosc1_compress(clevel, doshuffle, typesize, nbytes, src, dest, destsize)
+    @ccall libblosc2.blosc1_compress(clevel::Cint, doshuffle::Cint, typesize::Csize_t, nbytes::Csize_t, src::Ptr{Cvoid}, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
 end
 
-function blosc_decompress(src, dest, destsize)
-    @ccall libblosc2.blosc_decompress(src::Ptr{Cvoid}, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
+function blosc1_decompress(src, dest, destsize)
+    @ccall libblosc2.blosc1_decompress(src::Ptr{Cvoid}, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
 end
 
-function blosc_getitem(src, start, nitems, dest)
-    @ccall libblosc2.blosc_getitem(src::Ptr{Cvoid}, start::Cint, nitems::Cint, dest::Ptr{Cvoid})::Cint
+function blosc1_getitem(src, start, nitems, dest)
+    @ccall libblosc2.blosc1_getitem(src::Ptr{Cvoid}, start::Cint, nitems::Cint, dest::Ptr{Cvoid})::Cint
 end
 
 function blosc2_getitem(src, srcsize, start, nitems, dest, destsize)
@@ -244,85 +278,85 @@ end
 # typedef void ( * blosc_threads_callback ) ( void * callback_data , void ( * dojob ) ( void * ) , int numjobs , size_t jobdata_elsize , void * jobdata )
 const blosc_threads_callback = Ptr{Cvoid}
 
-function blosc_set_threads_callback(callback, callback_data)
-    @ccall libblosc2.blosc_set_threads_callback(callback::blosc_threads_callback, callback_data::Ptr{Cvoid})::Cvoid
+function blosc2_set_threads_callback(callback, callback_data)
+    @ccall libblosc2.blosc2_set_threads_callback(callback::blosc_threads_callback, callback_data::Ptr{Cvoid})::Cvoid
 end
 
-function blosc_get_nthreads()
-    @ccall libblosc2.blosc_get_nthreads()::Cint
+function blosc2_get_nthreads()
+    @ccall libblosc2.blosc2_get_nthreads()::Int16
 end
 
-function blosc_set_nthreads(nthreads)
-    @ccall libblosc2.blosc_set_nthreads(nthreads::Cint)::Cint
+function blosc2_set_nthreads(nthreads)
+    @ccall libblosc2.blosc2_set_nthreads(nthreads::Int16)::Int16
 end
 
-function blosc_get_compressor()
-    @ccall libblosc2.blosc_get_compressor()::Cstring
+function blosc1_get_compressor()
+    @ccall libblosc2.blosc1_get_compressor()::Cstring
 end
 
-function blosc_set_compressor(compname)
-    @ccall libblosc2.blosc_set_compressor(compname::Cstring)::Cint
+function blosc1_set_compressor(compname)
+    @ccall libblosc2.blosc1_set_compressor(compname::Cstring)::Cint
 end
 
-function blosc_set_delta(dodelta)
-    @ccall libblosc2.blosc_set_delta(dodelta::Cint)::Cvoid
+function blosc2_set_delta(dodelta)
+    @ccall libblosc2.blosc2_set_delta(dodelta::Cint)::Cvoid
 end
 
-function blosc_compcode_to_compname(compcode, compname)
-    @ccall libblosc2.blosc_compcode_to_compname(compcode::Cint, compname::Ptr{Cstring})::Cint
+function blosc2_compcode_to_compname(compcode, compname)
+    @ccall libblosc2.blosc2_compcode_to_compname(compcode::Cint, compname::Ptr{Cstring})::Cint
 end
 
-function blosc_compname_to_compcode(compname)
-    @ccall libblosc2.blosc_compname_to_compcode(compname::Cstring)::Cint
+function blosc2_compname_to_compcode(compname)
+    @ccall libblosc2.blosc2_compname_to_compcode(compname::Cstring)::Cint
 end
 
-function blosc_list_compressors()
-    @ccall libblosc2.blosc_list_compressors()::Cstring
+function blosc2_list_compressors()
+    @ccall libblosc2.blosc2_list_compressors()::Cstring
 end
 
-function blosc_get_version_string()
-    @ccall libblosc2.blosc_get_version_string()::Cstring
+function blosc2_get_version_string()
+    @ccall libblosc2.blosc2_get_version_string()::Cstring
 end
 
-function blosc_get_complib_info(compname, complib, version)
-    @ccall libblosc2.blosc_get_complib_info(compname::Cstring, complib::Ptr{Cstring}, version::Ptr{Cstring})::Cint
+function blosc2_get_complib_info(compname, complib, version)
+    @ccall libblosc2.blosc2_get_complib_info(compname::Cstring, complib::Ptr{Cstring}, version::Ptr{Cstring})::Cint
 end
 
-function blosc_free_resources()
-    @ccall libblosc2.blosc_free_resources()::Cint
+function blosc2_free_resources()
+    @ccall libblosc2.blosc2_free_resources()::Cint
 end
 
-function blosc_cbuffer_sizes(cbuffer, nbytes, cbytes, blocksize)
-    @ccall libblosc2.blosc_cbuffer_sizes(cbuffer::Ptr{Cvoid}, nbytes::Ptr{Csize_t}, cbytes::Ptr{Csize_t}, blocksize::Ptr{Csize_t})::Cvoid
+function blosc1_cbuffer_sizes(cbuffer, nbytes, cbytes, blocksize)
+    @ccall libblosc2.blosc1_cbuffer_sizes(cbuffer::Ptr{Cvoid}, nbytes::Ptr{Csize_t}, cbytes::Ptr{Csize_t}, blocksize::Ptr{Csize_t})::Cvoid
 end
 
 function blosc2_cbuffer_sizes(cbuffer, nbytes, cbytes, blocksize)
     @ccall libblosc2.blosc2_cbuffer_sizes(cbuffer::Ptr{Cvoid}, nbytes::Ptr{Int32}, cbytes::Ptr{Int32}, blocksize::Ptr{Int32})::Cint
 end
 
-function blosc_cbuffer_validate(cbuffer, cbytes, nbytes)
-    @ccall libblosc2.blosc_cbuffer_validate(cbuffer::Ptr{Cvoid}, cbytes::Csize_t, nbytes::Ptr{Csize_t})::Cint
+function blosc1_cbuffer_validate(cbuffer, cbytes, nbytes)
+    @ccall libblosc2.blosc1_cbuffer_validate(cbuffer::Ptr{Cvoid}, cbytes::Csize_t, nbytes::Ptr{Csize_t})::Cint
 end
 
-function blosc_cbuffer_metainfo(cbuffer, typesize, flags)
-    @ccall libblosc2.blosc_cbuffer_metainfo(cbuffer::Ptr{Cvoid}, typesize::Ptr{Csize_t}, flags::Ptr{Cint})::Cvoid
+function blosc1_cbuffer_metainfo(cbuffer, typesize, flags)
+    @ccall libblosc2.blosc1_cbuffer_metainfo(cbuffer::Ptr{Cvoid}, typesize::Ptr{Csize_t}, flags::Ptr{Cint})::Cvoid
 end
 
-function blosc_cbuffer_versions(cbuffer, version, versionlz)
-    @ccall libblosc2.blosc_cbuffer_versions(cbuffer::Ptr{Cvoid}, version::Ptr{Cint}, versionlz::Ptr{Cint})::Cvoid
+function blosc2_cbuffer_versions(cbuffer, version, versionlz)
+    @ccall libblosc2.blosc2_cbuffer_versions(cbuffer::Ptr{Cvoid}, version::Ptr{Cint}, versionlz::Ptr{Cint})::Cvoid
 end
 
-function blosc_cbuffer_complib(cbuffer)
-    @ccall libblosc2.blosc_cbuffer_complib(cbuffer::Ptr{Cvoid})::Cstring
+function blosc2_cbuffer_complib(cbuffer)
+    @ccall libblosc2.blosc2_cbuffer_complib(cbuffer::Ptr{Cvoid})::Cstring
 end
 
-@cenum var"##Ctag#280"::UInt32 begin
+@cenum var"##Ctag#268"::UInt32 begin
     BLOSC2_IO_FILESYSTEM = 0
     BLOSC_IO_LAST_BLOSC_DEFINED = 1
     BLOSC_IO_LAST_REGISTERED = 32
 end
 
-@cenum var"##Ctag#281"::UInt32 begin
+@cenum var"##Ctag#269"::UInt32 begin
     BLOSC2_IO_BLOSC_DEFINED = 32
     BLOSC2_IO_REGISTERED = 160
     BLOSC2_IO_USER_DEFINED = 256
@@ -346,11 +380,12 @@ const blosc2_write_cb = Ptr{Cvoid}
 # typedef int64_t ( * blosc2_read_cb ) ( void * ptr , int64_t size , int64_t nitems , void * stream )
 const blosc2_read_cb = Ptr{Cvoid}
 
-# typedef int64_t ( * blosc2_truncate_cb ) ( void * stream , int64_t size )
+# typedef int ( * blosc2_truncate_cb ) ( void * stream , int64_t size )
 const blosc2_truncate_cb = Ptr{Cvoid}
 
 struct blosc2_io_cb
     id::UInt8
+    name::Cstring
     open::blosc2_open_cb
     close::blosc2_close_cb
     tell::blosc2_tell_cb
@@ -362,6 +397,7 @@ end
 
 struct blosc2_io
     id::UInt8
+    name::Cstring
     params::Ptr{Cvoid}
 end
 
@@ -377,22 +413,29 @@ mutable struct blosc2_context_s end
 
 const blosc2_context = blosc2_context_s
 
-struct blosc2_btune
-    btune_init::Ptr{Cvoid}
-    btune_next_blocksize::Ptr{Cvoid}
-    btune_next_cparams::Ptr{Cvoid}
-    btune_update::Ptr{Cvoid}
-    btune_free::Ptr{Cvoid}
-    btune_config::Ptr{Cvoid}
+struct blosc2_tuner
+    init::Ptr{Cvoid}
+    next_blocksize::Ptr{Cvoid}
+    next_cparams::Ptr{Cvoid}
+    update::Ptr{Cvoid}
+    free::Ptr{Cvoid}
+    id::Cint
+    name::Cstring
+end
+
+function blosc2_register_tuner(tuner)
+    @ccall libblosc2.blosc2_register_tuner(tuner::Ptr{blosc2_tuner})::Cint
 end
 
 struct blosc2_prefilter_params
     user_data::Ptr{Cvoid}
-    in::Ptr{UInt8}
-    out::Ptr{UInt8}
-    out_size::Int32
-    out_typesize::Int32
-    out_offset::Int32
+    input::Ptr{UInt8}
+    output::Ptr{UInt8}
+    output_size::Int32
+    output_typesize::Int32
+    output_offset::Int32
+    nchunk::Int64
+    nblock::Int32
     tid::Int32
     ttmp::Ptr{UInt8}
     ttmp_nbytes::Csize_t
@@ -401,11 +444,13 @@ end
 
 struct blosc2_postfilter_params
     user_data::Ptr{Cvoid}
-    in::Ptr{UInt8}
-    out::Ptr{UInt8}
+    input::Ptr{UInt8}
+    output::Ptr{UInt8}
     size::Int32
     typesize::Int32
     offset::Int32
+    nchunk::Int64
+    nblock::Int32
     tid::Int32
     ttmp::Ptr{UInt8}
     ttmp_nbytes::Csize_t
@@ -432,9 +477,12 @@ struct blosc2_cparams
     filters_meta::NTuple{6, UInt8}
     prefilter::blosc2_prefilter_fn
     preparams::Ptr{blosc2_prefilter_params}
-    udbtune::Ptr{blosc2_btune}
+    tuner_params::Ptr{Cvoid}
+    tuner_id::Cint
+    instr_codec::Bool
+    codec_params::Ptr{Cvoid}
+    filter_params::NTuple{6, Ptr{Cvoid}}
 end
-
 function Base.getproperty(x::Ptr{blosc2_cparams}, f::Symbol)
     f === :compcode && return Ptr{UInt8}(x + 0)
     f === :compcode_meta && return Ptr{UInt8}(x + 1)
@@ -449,7 +497,11 @@ function Base.getproperty(x::Ptr{blosc2_cparams}, f::Symbol)
     f === :filters_meta && return Ptr{NTuple{6, UInt8}}(x + 38)
     f === :prefilter && return Ptr{blosc2_prefilter_fn}(x + 48)
     f === :preparams && return Ptr{Ptr{blosc2_prefilter_params}}(x + 56)
-    f === :udbtune && return Ptr{Ptr{blosc2_btune}}(x + 64)
+    f === :tuner_params && return Ptr{Ptr{Cvoid}}(x + 64)
+    f === :tuner_id && return Ptr{Cint}(x + 72)
+    f === :instr_codec && return Ptr{Bool}(x + 76)
+    f === :codec_params && return Ptr{Ptr{Cvoid}}(x + 80)
+    f === :filter_params && return Ptr{NTuple{6, Ptr{Cvoid}}}(x + 88)
     return getfield(x, f)
 end
 
@@ -457,15 +509,15 @@ function Base.setproperty!(x::Ptr{blosc2_cparams}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 struct blosc2_dparams
-    nthreads::Cint
+    nthreads::Int16
     schunk::Ptr{Cvoid}
     postfilter::blosc2_postfilter_fn
     postparams::Ptr{blosc2_postfilter_params}
 end
-
 function Base.getproperty(x::Ptr{blosc2_dparams}, f::Symbol)
-    f === :nthreads && return Ptr{Cint}(x + 0)
+    f === :nthreads && return Ptr{Int16}(x + 0)
     f === :schunk && return Ptr{Ptr{Cvoid}}(x + 8)
     f === :postfilter && return Ptr{blosc2_postfilter_fn}(x + 16)
     f === :postparams && return Ptr{Ptr{blosc2_postfilter_params}}(x + 24)
@@ -475,6 +527,7 @@ end
 function Base.setproperty!(x::Ptr{blosc2_dparams}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 function blosc2_create_cctx(cparams)
     @ccall libblosc2.blosc2_create_cctx(cparams::blosc2_cparams)::Ptr{blosc2_context}
@@ -517,19 +570,19 @@ function blosc2_decompress_ctx(context, src, srcsize, dest, destsize)
 end
 
 function blosc2_chunk_zeros(cparams, nbytes, dest, destsize)
-    @ccall libblosc2.blosc2_chunk_zeros(cparams::blosc2_cparams, nbytes::Csize_t, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
+    @ccall libblosc2.blosc2_chunk_zeros(cparams::blosc2_cparams, nbytes::Int32, dest::Ptr{Cvoid}, destsize::Int32)::Cint
 end
 
 function blosc2_chunk_nans(cparams, nbytes, dest, destsize)
-    @ccall libblosc2.blosc2_chunk_nans(cparams::blosc2_cparams, nbytes::Csize_t, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
+    @ccall libblosc2.blosc2_chunk_nans(cparams::blosc2_cparams, nbytes::Int32, dest::Ptr{Cvoid}, destsize::Int32)::Cint
 end
 
 function blosc2_chunk_repeatval(cparams, nbytes, dest, destsize, repeatval)
-    @ccall libblosc2.blosc2_chunk_repeatval(cparams::blosc2_cparams, nbytes::Csize_t, dest::Ptr{Cvoid}, destsize::Csize_t, repeatval::Ptr{Cvoid})::Cint
+    @ccall libblosc2.blosc2_chunk_repeatval(cparams::blosc2_cparams, nbytes::Int32, dest::Ptr{Cvoid}, destsize::Int32, repeatval::Ptr{Cvoid})::Cint
 end
 
 function blosc2_chunk_uninit(cparams, nbytes, dest, destsize)
-    @ccall libblosc2.blosc2_chunk_uninit(cparams::blosc2_cparams, nbytes::Csize_t, dest::Ptr{Cvoid}, destsize::Csize_t)::Cint
+    @ccall libblosc2.blosc2_chunk_uninit(cparams::blosc2_cparams, nbytes::Int32, dest::Ptr{Cvoid}, destsize::Int32)::Cint
 end
 
 function blosc2_getitem_ctx(context, src, srcsize, start, nitems, dest, destsize)
@@ -543,7 +596,6 @@ struct blosc2_storage
     dparams::Ptr{blosc2_dparams}
     io::Ptr{blosc2_io}
 end
-
 function Base.getproperty(x::Ptr{blosc2_storage}, f::Symbol)
     f === :contiguous && return Ptr{Bool}(x + 0)
     f === :urlpath && return Ptr{Cstring}(x + 8)
@@ -557,6 +609,7 @@ function Base.setproperty!(x::Ptr{blosc2_storage}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 mutable struct blosc2_frame_s end
 
 const blosc2_frame = blosc2_frame_s
@@ -566,7 +619,6 @@ struct blosc2_metalayer
     content::Ptr{UInt8}
     content_len::Int32
 end
-
 function Base.getproperty(x::Ptr{blosc2_metalayer}, f::Symbol)
     f === :name && return Ptr{Cstring}(x + 0)
     f === :content && return Ptr{Ptr{UInt8}}(x + 8)
@@ -578,17 +630,20 @@ function Base.setproperty!(x::Ptr{blosc2_metalayer}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 struct blosc2_schunk
     version::UInt8
     compcode::UInt8
     compcode_meta::UInt8
     clevel::UInt8
+    splitmode::UInt8
     typesize::Int32
     blocksize::Int32
     chunksize::Int32
     filters::NTuple{6, UInt8}
     filters_meta::NTuple{6, UInt8}
-    nchunks::Int32
+    nchunks::Int64
+    current_nchunk::Int64
     nbytes::Int64
     cbytes::Int64
     data::Ptr{Ptr{UInt8}}
@@ -598,42 +653,50 @@ struct blosc2_schunk
     cctx::Ptr{blosc2_context}
     dctx::Ptr{blosc2_context}
     metalayers::NTuple{16, Ptr{blosc2_metalayer}}
-    nmetalayers::Int16
+    nmetalayers::UInt16
     vlmetalayers::NTuple{8192, Ptr{blosc2_metalayer}}
     nvlmetalayers::Int16
-    udbtune::Ptr{blosc2_btune}
+    tuner_params::Ptr{Cvoid}
+    tuner_id::Cint
+    ndim::Int8
+    blockshape::Ptr{Int64}
 end
-
 function Base.getproperty(x::Ptr{blosc2_schunk}, f::Symbol)
     f === :version && return Ptr{UInt8}(x + 0)
     f === :compcode && return Ptr{UInt8}(x + 1)
     f === :compcode_meta && return Ptr{UInt8}(x + 2)
     f === :clevel && return Ptr{UInt8}(x + 3)
-    f === :typesize && return Ptr{Int32}(x + 4)
-    f === :blocksize && return Ptr{Int32}(x + 8)
-    f === :chunksize && return Ptr{Int32}(x + 12)
-    f === :filters && return Ptr{NTuple{6, UInt8}}(x + 16)
-    f === :filters_meta && return Ptr{NTuple{6, UInt8}}(x + 22)
-    f === :nchunks && return Ptr{Int32}(x + 28)
-    f === :nbytes && return Ptr{Int64}(x + 32)
-    f === :cbytes && return Ptr{Int64}(x + 40)
-    f === :data && return Ptr{Ptr{Ptr{UInt8}}}(x + 48)
-    f === :data_len && return Ptr{Csize_t}(x + 56)
-    f === :storage && return Ptr{Ptr{blosc2_storage}}(x + 64)
-    f === :frame && return Ptr{Ptr{blosc2_frame}}(x + 72)
-    f === :cctx && return Ptr{Ptr{blosc2_context}}(x + 80)
-    f === :dctx && return Ptr{Ptr{blosc2_context}}(x + 88)
-    f === :metalayers && return Ptr{NTuple{16, Ptr{blosc2_metalayer}}}(x + 96)
-    f === :nmetalayers && return Ptr{Int16}(x + 224)
-    f === :vlmetalayers && return Ptr{NTuple{8192, Ptr{blosc2_metalayer}}}(x + 232)
-    f === :nvlmetalayers && return Ptr{Int16}(x + 65768)
-    f === :udbtune && return Ptr{Ptr{blosc2_btune}}(x + 65776)
+    f === :splitmode && return Ptr{UInt8}(x + 4)
+    f === :typesize && return Ptr{Int32}(x + 8)
+    f === :blocksize && return Ptr{Int32}(x + 12)
+    f === :chunksize && return Ptr{Int32}(x + 16)
+    f === :filters && return Ptr{NTuple{6, UInt8}}(x + 20)
+    f === :filters_meta && return Ptr{NTuple{6, UInt8}}(x + 26)
+    f === :nchunks && return Ptr{Int64}(x + 32)
+    f === :current_nchunk && return Ptr{Int64}(x + 40)
+    f === :nbytes && return Ptr{Int64}(x + 48)
+    f === :cbytes && return Ptr{Int64}(x + 56)
+    f === :data && return Ptr{Ptr{Ptr{UInt8}}}(x + 64)
+    f === :data_len && return Ptr{Csize_t}(x + 72)
+    f === :storage && return Ptr{Ptr{blosc2_storage}}(x + 80)
+    f === :frame && return Ptr{Ptr{blosc2_frame}}(x + 88)
+    f === :cctx && return Ptr{Ptr{blosc2_context}}(x + 96)
+    f === :dctx && return Ptr{Ptr{blosc2_context}}(x + 104)
+    f === :metalayers && return Ptr{NTuple{16, Ptr{blosc2_metalayer}}}(x + 112)
+    f === :nmetalayers && return Ptr{UInt16}(x + 240)
+    f === :vlmetalayers && return Ptr{NTuple{8192, Ptr{blosc2_metalayer}}}(x + 248)
+    f === :nvlmetalayers && return Ptr{Int16}(x + 65784)
+    f === :tuner_params && return Ptr{Ptr{Cvoid}}(x + 65792)
+    f === :tuner_id && return Ptr{Cint}(x + 65800)
+    f === :ndim && return Ptr{Int8}(x + 65804)
+    f === :blockshape && return Ptr{Ptr{Int64}}(x + 65808)
     return getfield(x, f)
 end
 
 function Base.setproperty!(x::Ptr{blosc2_schunk}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 function blosc2_schunk_new(storage)
     @ccall libblosc2.blosc2_schunk_new(storage::Ptr{blosc2_storage})::Ptr{blosc2_schunk}
@@ -647,8 +710,16 @@ function blosc2_schunk_from_buffer(cframe, len, copy)
     @ccall libblosc2.blosc2_schunk_from_buffer(cframe::Ptr{UInt8}, len::Int64, copy::Bool)::Ptr{blosc2_schunk}
 end
 
+function blosc2_schunk_avoid_cframe_free(schunk, avoid_cframe_free)
+    @ccall libblosc2.blosc2_schunk_avoid_cframe_free(schunk::Ptr{blosc2_schunk}, avoid_cframe_free::Bool)::Cvoid
+end
+
 function blosc2_schunk_open(urlpath)
     @ccall libblosc2.blosc2_schunk_open(urlpath::Cstring)::Ptr{blosc2_schunk}
+end
+
+function blosc2_schunk_open_offset(urlpath, offset)
+    @ccall libblosc2.blosc2_schunk_open_offset(urlpath::Cstring, offset::Int64)::Ptr{blosc2_schunk}
 end
 
 function blosc2_schunk_open_udio(urlpath, udio)
@@ -663,40 +734,52 @@ function blosc2_schunk_to_file(schunk, urlpath)
     @ccall libblosc2.blosc2_schunk_to_file(schunk::Ptr{blosc2_schunk}, urlpath::Cstring)::Int64
 end
 
+function blosc2_schunk_append_file(schunk, urlpath)
+    @ccall libblosc2.blosc2_schunk_append_file(schunk::Ptr{blosc2_schunk}, urlpath::Cstring)::Int64
+end
+
 function blosc2_schunk_free(schunk)
     @ccall libblosc2.blosc2_schunk_free(schunk::Ptr{blosc2_schunk})::Cint
 end
 
 function blosc2_schunk_append_chunk(schunk, chunk, copy)
-    @ccall libblosc2.blosc2_schunk_append_chunk(schunk::Ptr{blosc2_schunk}, chunk::Ptr{UInt8}, copy::Bool)::Cint
+    @ccall libblosc2.blosc2_schunk_append_chunk(schunk::Ptr{blosc2_schunk}, chunk::Ptr{UInt8}, copy::Bool)::Int64
 end
 
 function blosc2_schunk_update_chunk(schunk, nchunk, chunk, copy)
-    @ccall libblosc2.blosc2_schunk_update_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, chunk::Ptr{UInt8}, copy::Bool)::Cint
+    @ccall libblosc2.blosc2_schunk_update_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64, chunk::Ptr{UInt8}, copy::Bool)::Int64
 end
 
 function blosc2_schunk_insert_chunk(schunk, nchunk, chunk, copy)
-    @ccall libblosc2.blosc2_schunk_insert_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, chunk::Ptr{UInt8}, copy::Bool)::Cint
+    @ccall libblosc2.blosc2_schunk_insert_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64, chunk::Ptr{UInt8}, copy::Bool)::Int64
 end
 
 function blosc2_schunk_delete_chunk(schunk, nchunk)
-    @ccall libblosc2.blosc2_schunk_delete_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint)::Cint
+    @ccall libblosc2.blosc2_schunk_delete_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64)::Int64
 end
 
 function blosc2_schunk_append_buffer(schunk, src, nbytes)
-    @ccall libblosc2.blosc2_schunk_append_buffer(schunk::Ptr{blosc2_schunk}, src::Ptr{Cvoid}, nbytes::Int32)::Cint
+    @ccall libblosc2.blosc2_schunk_append_buffer(schunk::Ptr{blosc2_schunk}, src::Ptr{Cvoid}, nbytes::Int32)::Int64
 end
 
 function blosc2_schunk_decompress_chunk(schunk, nchunk, dest, nbytes)
-    @ccall libblosc2.blosc2_schunk_decompress_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, dest::Ptr{Cvoid}, nbytes::Int32)::Cint
+    @ccall libblosc2.blosc2_schunk_decompress_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64, dest::Ptr{Cvoid}, nbytes::Int32)::Cint
 end
 
 function blosc2_schunk_get_chunk(schunk, nchunk, chunk, needs_free)
-    @ccall libblosc2.blosc2_schunk_get_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, chunk::Ptr{Ptr{UInt8}}, needs_free::Ptr{Bool})::Cint
+    @ccall libblosc2.blosc2_schunk_get_chunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64, chunk::Ptr{Ptr{UInt8}}, needs_free::Ptr{Bool})::Cint
 end
 
 function blosc2_schunk_get_lazychunk(schunk, nchunk, chunk, needs_free)
-    @ccall libblosc2.blosc2_schunk_get_lazychunk(schunk::Ptr{blosc2_schunk}, nchunk::Cint, chunk::Ptr{Ptr{UInt8}}, needs_free::Ptr{Bool})::Cint
+    @ccall libblosc2.blosc2_schunk_get_lazychunk(schunk::Ptr{blosc2_schunk}, nchunk::Int64, chunk::Ptr{Ptr{UInt8}}, needs_free::Ptr{Bool})::Cint
+end
+
+function blosc2_schunk_get_slice_buffer(schunk, start, stop, buffer)
+    @ccall libblosc2.blosc2_schunk_get_slice_buffer(schunk::Ptr{blosc2_schunk}, start::Int64, stop::Int64, buffer::Ptr{Cvoid})::Cint
+end
+
+function blosc2_schunk_set_slice_buffer(schunk, start, stop, buffer)
+    @ccall libblosc2.blosc2_schunk_set_slice_buffer(schunk::Ptr{blosc2_schunk}, start::Int64, stop::Int64, buffer::Ptr{Cvoid})::Cint
 end
 
 function blosc2_schunk_get_cparams(schunk, cparams)
@@ -708,7 +791,7 @@ function blosc2_schunk_get_dparams(schunk, dparams)
 end
 
 function blosc2_schunk_reorder_offsets(schunk, offsets_order)
-    @ccall libblosc2.blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Ptr{Cint})::Cint
+    @ccall libblosc2.blosc2_schunk_reorder_offsets(schunk::Ptr{blosc2_schunk}, offsets_order::Ptr{Int64})::Cint
 end
 
 function blosc2_schunk_frame_len(schunk)
@@ -716,7 +799,7 @@ function blosc2_schunk_frame_len(schunk)
 end
 
 function blosc2_schunk_fill_special(schunk, nitems, special_value, chunksize)
-    @ccall libblosc2.blosc2_schunk_fill_special(schunk::Ptr{blosc2_schunk}, nitems::Int64, special_value::Cint, chunksize::Int32)::Cint
+    @ccall libblosc2.blosc2_schunk_fill_special(schunk::Ptr{blosc2_schunk}, nitems::Int64, special_value::Cint, chunksize::Int32)::Int64
 end
 
 function blosc2_meta_exists(schunk, name)
@@ -724,15 +807,15 @@ function blosc2_meta_exists(schunk, name)
 end
 
 function blosc2_meta_add(schunk, name, content, content_len)
-    @ccall libblosc2.blosc2_meta_add(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::UInt32)::Cint
+    @ccall libblosc2.blosc2_meta_add(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::Int32)::Cint
 end
 
 function blosc2_meta_update(schunk, name, content, content_len)
-    @ccall libblosc2.blosc2_meta_update(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::UInt32)::Cint
+    @ccall libblosc2.blosc2_meta_update(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::Int32)::Cint
 end
 
 function blosc2_meta_get(schunk, name, content, content_len)
-    @ccall libblosc2.blosc2_meta_get(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{Ptr{UInt8}}, content_len::Ptr{UInt32})::Cint
+    @ccall libblosc2.blosc2_meta_get(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{Ptr{UInt8}}, content_len::Ptr{Int32})::Cint
 end
 
 function blosc2_vlmeta_exists(schunk, name)
@@ -740,52 +823,66 @@ function blosc2_vlmeta_exists(schunk, name)
 end
 
 function blosc2_vlmeta_add(schunk, name, content, content_len, cparams)
-    @ccall libblosc2.blosc2_vlmeta_add(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::UInt32, cparams::Ptr{blosc2_cparams})::Cint
+    @ccall libblosc2.blosc2_vlmeta_add(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::Int32, cparams::Ptr{blosc2_cparams})::Cint
 end
 
 function blosc2_vlmeta_update(schunk, name, content, content_len, cparams)
-    @ccall libblosc2.blosc2_vlmeta_update(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::UInt32, cparams::Ptr{blosc2_cparams})::Cint
+    @ccall libblosc2.blosc2_vlmeta_update(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{UInt8}, content_len::Int32, cparams::Ptr{blosc2_cparams})::Cint
 end
 
 function blosc2_vlmeta_get(schunk, name, content, content_len)
-    @ccall libblosc2.blosc2_vlmeta_get(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{Ptr{UInt8}}, content_len::Ptr{UInt32})::Cint
+    @ccall libblosc2.blosc2_vlmeta_get(schunk::Ptr{blosc2_schunk}, name::Cstring, content::Ptr{Ptr{UInt8}}, content_len::Ptr{Int32})::Cint
 end
 
+function blosc2_vlmeta_delete(schunk, name)
+    @ccall libblosc2.blosc2_vlmeta_delete(schunk::Ptr{blosc2_schunk}, name::Cstring)::Cint
+end
+
+function blosc2_vlmeta_get_names(schunk, names)
+    @ccall libblosc2.blosc2_vlmeta_get_names(schunk::Ptr{blosc2_schunk}, names::Ptr{Cstring})::Cint
+end
+
+const blosc_timestamp_t = timespec
+
 function blosc_set_timestamp(timestamp)
-    @ccall libblosc2.blosc_set_timestamp(timestamp::Ptr{timespec})::Cvoid
+    @ccall libblosc2.blosc_set_timestamp(timestamp::Ptr{blosc_timestamp_t})::Cvoid
 end
 
 function blosc_elapsed_nsecs(start_time, end_time)
-    @ccall libblosc2.blosc_elapsed_nsecs(start_time::timespec, end_time::timespec)::Cdouble
+    @ccall libblosc2.blosc_elapsed_nsecs(start_time::blosc_timestamp_t, end_time::blosc_timestamp_t)::Cdouble
 end
 
 function blosc_elapsed_secs(start_time, end_time)
-    @ccall libblosc2.blosc_elapsed_secs(start_time::timespec, end_time::timespec)::Cdouble
+    @ccall libblosc2.blosc_elapsed_secs(start_time::blosc_timestamp_t, end_time::blosc_timestamp_t)::Cdouble
 end
 
-function blosc_get_blocksize()
-    @ccall libblosc2.blosc_get_blocksize()::Cint
+function blosc1_get_blocksize()
+    @ccall libblosc2.blosc1_get_blocksize()::Cint
 end
 
-function blosc_set_blocksize(blocksize)
-    @ccall libblosc2.blosc_set_blocksize(blocksize::Csize_t)::Cvoid
+function blosc1_set_blocksize(blocksize)
+    @ccall libblosc2.blosc1_set_blocksize(blocksize::Csize_t)::Cvoid
 end
 
-function blosc_set_schunk(schunk)
-    @ccall libblosc2.blosc_set_schunk(schunk::Ptr{blosc2_schunk})::Cvoid
+function blosc1_set_splitmode(splitmode)
+    @ccall libblosc2.blosc1_set_splitmode(splitmode::Cint)::Cvoid
 end
 
-# typedef int ( * blosc2_codec_encoder_cb ) ( const uint8_t * input , int32_t input_len , uint8_t * output , int32_t output_len , uint8_t meta , blosc2_cparams * cparams )
+function blosc2_frame_get_offsets(schunk)
+    @ccall libblosc2.blosc2_frame_get_offsets(schunk::Ptr{blosc2_schunk})::Ptr{Int64}
+end
+
+# typedef int ( * blosc2_codec_encoder_cb ) ( const uint8_t * input , int32_t input_len , uint8_t * output , int32_t output_len , uint8_t meta , blosc2_cparams * cparams , const void * chunk )
 const blosc2_codec_encoder_cb = Ptr{Cvoid}
 
-# typedef int ( * blosc2_codec_decoder_cb ) ( const uint8_t * input , int32_t input_len , uint8_t * output , int32_t output_len , uint8_t meta , blosc2_dparams * dparams )
+# typedef int ( * blosc2_codec_decoder_cb ) ( const uint8_t * input , int32_t input_len , uint8_t * output , int32_t output_len , uint8_t meta , blosc2_dparams * dparams , const void * chunk )
 const blosc2_codec_decoder_cb = Ptr{Cvoid}
 
 struct blosc2_codec
     compcode::UInt8
     compname::Cstring
     complib::UInt8
-    compver::UInt8
+    version::UInt8
     encoder::blosc2_codec_encoder_cb
     decoder::blosc2_codec_decoder_cb
 end
@@ -794,14 +891,16 @@ function blosc2_register_codec(codec)
     @ccall libblosc2.blosc2_register_codec(codec::Ptr{blosc2_codec})::Cint
 end
 
-# typedef int ( * blosc2_filter_forward_cb ) ( const uint8_t * , uint8_t * , int32_t , uint8_t , blosc2_cparams * )
+# typedef int ( * blosc2_filter_forward_cb ) ( const uint8_t * , uint8_t * , int32_t , uint8_t , blosc2_cparams * , uint8_t )
 const blosc2_filter_forward_cb = Ptr{Cvoid}
 
-# typedef int ( * blosc2_filter_backward_cb ) ( const uint8_t * , uint8_t * , int32_t , uint8_t , blosc2_dparams * )
+# typedef int ( * blosc2_filter_backward_cb ) ( const uint8_t * , uint8_t * , int32_t , uint8_t , blosc2_dparams * , uint8_t )
 const blosc2_filter_backward_cb = Ptr{Cvoid}
 
 struct blosc2_filter
     id::UInt8
+    name::Cstring
+    version::UInt8
     forward::blosc2_filter_forward_cb
     backward::blosc2_filter_backward_cb
 end
@@ -814,19 +913,45 @@ function blosc2_remove_dir(path)
     @ccall libblosc2.blosc2_remove_dir(path::Cstring)::Cint
 end
 
+function blosc2_remove_urlpath(path)
+    @ccall libblosc2.blosc2_remove_urlpath(path::Cstring)::Cint
+end
+
+function blosc2_rename_urlpath(old_urlpath, new_path)
+    @ccall libblosc2.blosc2_rename_urlpath(old_urlpath::Cstring, new_path::Cstring)::Cint
+end
+
+function blosc2_unidim_to_multidim(ndim, shape, i, index)
+    @ccall libblosc2.blosc2_unidim_to_multidim(ndim::UInt8, shape::Ptr{Int64}, i::Int64, index::Ptr{Int64})::Cvoid
+end
+
+function blosc2_multidim_to_unidim(index, ndim, strides, i)
+    @ccall libblosc2.blosc2_multidim_to_unidim(index::Ptr{Int64}, ndim::Int8, strides::Ptr{Int64}, i::Ptr{Int64})::Cvoid
+end
+
+function blosc2_get_slice_nchunks(schunk, start, stop, chunks_idx)
+    @ccall libblosc2.blosc2_get_slice_nchunks(schunk::Ptr{blosc2_schunk}, start::Ptr{Int64}, stop::Ptr{Int64}, chunks_idx::Ptr{Ptr{Int64}})::Cint
+end
+
+function swap_store(dest, pa, size)
+    @ccall libblosc2.swap_store(dest::Ptr{Cvoid}, pa::Ptr{Cvoid}, size::Cint)::Cvoid
+end
+
 # Skipping MacroDefinition: BLOSC_NO_EXPORT __attribute__ ( ( visibility ( "hidden" ) ) )
 
 # Skipping MacroDefinition: BLOSC_UNUSED_VAR __attribute__ ( ( unused ) )
 
-const BLOSC_VERSION_MAJOR = 2
+const BLOSC2_VERSION_MAJOR = 2
 
-const BLOSC_VERSION_MINOR = 0
+const BLOSC2_VERSION_MINOR = 13
 
-const BLOSC_VERSION_RELEASE = 1
+const BLOSC2_VERSION_RELEASE = 1
 
-const BLOSC_VERSION_STRING = "2.0.1"
+const BLOSC2_VERSION_STRING = "2.13.1"
 
-const BLOSC_VERSION_DATE = "\$Date:: 2021-06-29 #\$"
+const BLOSC2_VERSION_DATE = "\$Date:: 2023-01-25 #\$"
+
+const BLOSC2_MAX_DIM = 8
 
 const BLOSC_BLOSCLZ_COMPNAME = "blosclz"
 
@@ -846,6 +971,8 @@ const BLOSC_ZLIB_LIBNAME = "Zlib"
 
 const BLOSC_ZSTD_LIBNAME = "Zstd"
 
+# Skipping MacroDefinition: BLOSC_ATTRIBUTE_UNUSED __attribute__ ( ( unused ) )
+
 const BLOSC2_MAX_METALAYERS = 16
 
 const BLOSC2_METALAYER_NAME_MAXLEN = 31
@@ -853,6 +980,4 @@ const BLOSC2_METALAYER_NAME_MAXLEN = 31
 const BLOSC2_MAX_VLMETALAYERS = 8 * 1024
 
 const BLOSC2_VLMETALAYERS_NAME_MAXLEN = BLOSC2_METALAYER_NAME_MAXLEN
-
-# Skipping MacroDefinition: blosc_timestamp_t struct timespec
 

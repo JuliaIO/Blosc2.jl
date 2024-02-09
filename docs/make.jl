@@ -8,8 +8,8 @@ makedocs(
     pages = Any[
         "Introduction" => "index.md",
         "API" => [
-            "Main API" => "api.md"
-            "Low Level API" => "lib.md"
+            "Main API" => "api.md",
+            "Low-level API" => "lib.md"
         ]
     ]
 )

@@ -1,5 +1,5 @@
 module Blosc2
-include("Lib/lib.jl")
+include("lib/lib.jl")
 include("common/common.jl")
 include("compression/compression.jl")
 include("superchunks/superchunks.jl")
